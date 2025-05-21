@@ -11,10 +11,10 @@
 # hlsearch on (H) or off (h):
 ~h
 # Command Line History (newest to oldest):
+:wq
+|2,0,1747839160,,"wq"
 :q
 |2,0,1747834498,,"q"
-:wq
-|2,0,1747834231,,"wq"
 
 # Search String History (newest to oldest):
 
@@ -27,26 +27,76 @@
 # Registers:
 
 # File marks:
-'0  2  27  /.bashrc
-|4,48,2,27,1747834498,"/.bashrc"
-'1  4  7  /.bashrc
-|4,49,4,7,1747834231,"/.bashrc"
-'2  4  7  /.bashrc
-|4,50,4,7,1747834231,"/.bashrc"
+'0  1  55  ~/.bashrc
+|4,48,1,55,1747839160,"~/.bashrc"
+'1  1  55  ~/.bashrc
+|4,49,1,55,1747839156,"~/.bashrc"
+'2  2  27  /.bashrc
+|4,50,2,27,1747834498,"/.bashrc"
+'3  4  7  /.bashrc
+|4,51,4,7,1747834231,"/.bashrc"
+'4  4  7  /.bashrc
+|4,52,4,7,1747834231,"/.bashrc"
 
 # Jumplist (newest first):
+-'  1  55  ~/.bashrc
+|4,39,1,55,1747839160,"~/.bashrc"
+-'  1  55  ~/.bashrc
+|4,39,1,55,1747839156,"~/.bashrc"
+-'  2  27  /.bashrc
+|4,39,2,27,1747834498,"/.bashrc"
+-'  2  27  /.bashrc
+|4,39,2,27,1747834498,"/.bashrc"
+-'  2  27  /.bashrc
+|4,39,2,27,1747834498,"/.bashrc"
 -'  2  27  /.bashrc
 |4,39,2,27,1747834498,"/.bashrc"
 -'  4  7  /.bashrc
 |4,39,4,7,1747834448,"/.bashrc"
+-'  4  7  /.bashrc
+|4,39,4,7,1747834448,"/.bashrc"
+-'  4  7  /.bashrc
+|4,39,4,7,1747834448,"/.bashrc"
+-'  4  7  /.bashrc
+|4,39,4,7,1747834448,"/.bashrc"
+-'  4  7  /.bashrc
+|4,39,4,7,1747834231,"/.bashrc"
+-'  4  7  /.bashrc
+|4,39,4,7,1747834231,"/.bashrc"
+-'  4  7  /.bashrc
+|4,39,4,7,1747834231,"/.bashrc"
 -'  4  7  /.bashrc
 |4,39,4,7,1747834231,"/.bashrc"
 -'  1  0  /.bashrc
 |4,39,1,0,1747834178,"/.bashrc"
 -'  1  0  /.bashrc
 |4,39,1,0,1747834178,"/.bashrc"
+-'  1  0  /.bashrc
+|4,39,1,0,1747834178,"/.bashrc"
+-'  1  0  /.bashrc
+|4,39,1,0,1747834178,"/.bashrc"
+-'  1  0  /.bashrc
+|4,39,1,0,1747834178,"/.bashrc"
+-'  1  0  /.bashrc
+|4,39,1,0,1747834178,"/.bashrc"
+-'  1  0  /.bashrc
+|4,39,1,0,1747834178,"/.bashrc"
+-'  1  0  /.bashrc
+|4,39,1,0,1747834178,"/.bashrc"
 
 # History of marks within files (newest to oldest):
+
+> ~/.bashrc
+	*	1747839160	0
+	"	1	55
+	^	1	56
+	.	2	0
+	+	1	143
+	+	1	110
+	+	1	0
+	+	4	7
+	+	3	0
+	+	2	0
 
 > /.bashrc
 	*	1747834466	0
