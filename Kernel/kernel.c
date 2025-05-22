@@ -3,6 +3,7 @@
 #include <lib.h>
 #include <moduleLoader.h>
 #include <naiveConsole.h>
+#include <videoDriver.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -98,6 +99,11 @@ int main()
 	ncPrint("  Sample data module contents: ");
 	ncPrint((char*)sampleDataModuleAddress);
 	ncNewline();
+
+	for(int i=0, j=0; i<500; i++, j++){
+		putPixel(0xff0000, i, j);
+		putPixel(0xff0000, i, 500-j);    //dibuja una cruz en modo video
+	}
 
 	ncPrint("[Finished]");
 	return 0;
