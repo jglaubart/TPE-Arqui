@@ -22,6 +22,17 @@ void ncPrintChar(char character)
 	currentVideo += 2;
 }
 
+void ncPrintCharStyle(char character, uint8_t style){
+	*currentVideo++ = character;
+	*currentVideo++ = style;
+}
+
+void ncPrintStyle(const char * string, uint8_t style){
+	int i;
+	for (i = 0; string[i] != 0; i++)
+		ncPrintCharStyle(string[i], style);
+}
+
 void ncNewline()
 {
 	do
@@ -93,3 +104,68 @@ static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base)
 
 	return digits;
 }
+
+
+// Time and date
+
+extern uint8_t getSecs();
+extern uint8_t getMins();
+extern uint8_t getHours();
+extern uint8_t getDay();
+extern uint8_t getMonth();
+extern uint8_t getYear();
+
+void ncPrintDate(){
+	int hour = getHours();
+	int minute = getMins();
+	int second = getSecs();
+
+	int day = getDay();
+	int month = getMonth();
+	int year = getYear();
+
+	hour -= 3;
+
+	// UTC to UTC-3 adjustment
+	if (hour < 0) {
+		hour += 24;
+		day--;
+
+		if (day == 0) {
+			month--;
+			if (month == 0) {
+				month = 12;
+				year--;
+			}
+
+			switch (month) {
+				case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+					day = 31;
+					break;
+				case 4: case 6: case 9: case 11:
+					day = 30;
+					break;
+				case 2:
+					day = (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) ? 29 : 28;
+					break;
+			}
+		}
+	}
+
+	ncPrint("Date: ");
+	ncPrintHex(day);
+	ncPrint("/");
+	ncPrintHex(month);
+	ncPrint("/");
+	ncPrintHex(year);
+	ncNewline();
+
+	ncPrint("Time: ");
+	ncPrintHex(hour);
+	ncPrint(":");
+	ncPrintHex(minute);
+	ncPrint(":");
+	ncPrintHex(second);
+	ncNewline();
+}
+
