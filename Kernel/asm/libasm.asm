@@ -67,3 +67,27 @@ getHours:
 	mov rsp, rbp
 	pop rbp
     ret		
+
+
+inSpeaker:
+	push rbp
+	mov rbp, rsp
+
+	mov rdx, rdi
+	in al, dx
+
+	mov rsp, rbp
+	pop rbp
+	ret
+
+outSpeaker:
+	push rbp
+	mov rbp, rsp 
+
+	mov rax, rsi 
+	mov rdx, rdi 
+	out dx, al 
+
+	mov rsp, rbp
+	pop rbp
+	ret

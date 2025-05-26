@@ -2,13 +2,13 @@
 #define _SYSCALLS_H_
 
 #include <stdint.h>
-#include <color.h>
+#include <colores.h>
 
 
 
 
 /*
- * Pasaje de parametros en C (x64):
+ * Pasaje de parametros en C:
    %rdi %rsi %rdx %rcx %r8 %r9
  */
 uint64_t sys_read(uint64_t fd, char* buf);

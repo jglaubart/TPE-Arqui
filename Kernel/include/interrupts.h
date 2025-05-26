@@ -1,23 +1,13 @@
- /*
- *   interrupts.h
- *
- *  Created on: Apr 18, 2010
- *      Author: anizzomc
- */
-
 #ifndef INTERRUPS_H_
 #define INTERRUPS_H_
 
-#include <idtLoader.h>
+#include <stdint.h>
 
-void _irq00Handler(void);
-void _irq01Handler(void);
-void _irq02Handler(void);
-void _irq03Handler(void);
-void _irq04Handler(void);
-void _irq05Handler(void);
-
-void _exception0Handler(void);
+void interrupt_keyboard(void);
+void interrupt_timerTick(void);
+void interrupt_syscall(void);
+void exception_invalidOpCode(void);
+void exception_divideByZero(void);
 
 void _cli(void);
 

@@ -1,2 +1,0 @@
-Notas:
-- Usamos codigo de la implementacion de Linux. Comsultar y citar derechos de autor.

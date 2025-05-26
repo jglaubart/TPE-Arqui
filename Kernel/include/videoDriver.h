@@ -1,13 +1,8 @@
-#ifndef VIDEODRIVER_H
-#define VIDEODRIVER_H
+#ifndef _VIDEO_DRIVER_H_
+#define _VIDEO_DRIVER_H_
+
+
 #include <stdint.h>
-// Function declarations and macros for the video driver
-
-#define DIM_X 1024
-#define DIM_Y 768
-
-#define CHAR_WIDTH 8
-#define CHAR_HEIGHT 16
 
 typedef struct {
     uint8_t b;
@@ -21,23 +16,6 @@ extern Color BLACK;
 extern Color BLUE;
 
 
-typedef struct {
-	uint64_t x;
-	uint64_t y;
-}Point;
-/**
- * @brief Puts a pixel on the screen at the specified coordinates with the given color.
- * 
- * @param hexColor The color of the pixel in hexadecimal format.
- * @param x The x-coordinate of the pixel.
- * @param y The y-coordinate of the pixel.
- */
-void putPixel(uint32_t hexColor, uint64_t x, uint64_t y);
-
-void printChar(Point topLeft, char c, uint32_t color, char *font_name, unsigned int font_size);
-
-void printString(Point topLeft, char *string, uint32_t color, char *font_name, unsigned int font_size);
-
 //////////////
 void increasePixelScale();
 
@@ -48,29 +26,43 @@ uint16_t getRealCharWidth();
 
 // Obtener el alto real de un carácter según el factor de escala actual
 uint16_t getRealCharHeight();
+//////////////
 
-// Funciones para el manejo de texto en pantalla
-void vdPrintString(const char *str, Color fnt, Color bgd);
-void vdPrint(char c, Color fnt, Color bgd);
-void vdNewline();
-void vdBackspace(Color fnt, Color bgd);
 
-// Limpia la pantalla con un color determinado de fondo
+
+
+/* Writes a string in screen*/
+void videoDriver_prints(const char *str, Color fnt, Color bgd);
+
+/* Writes a char in screen, given a font Color and Background Color*/
+void videoDriver_print(char c, Color fnt, Color bgd);
+
+/* Jumps to the next line */
+void videoDriver_newline();
+
+/* Erases the last char from the line, can't go up a line */
+void videoDriver_backspace(Color fnt, Color bgd);
+
+/* Clears screen with a given color */
 void clearScreen (Color color);
 
-// Printea un value en los diversos formatos
-void vdPrintDec(uint64_t value, Color fnt, Color bgd);
-void vdPrintHex(uint64_t value, Color fnt, Color bgd);
-void vdPrintBin(uint64_t value, Color fnt, Color bgd);
-void vdPrintBase(uint64_t value, uint32_t base, Color fnt, Color bgd);
+/* prints in different bases */
+void videoDriver_printDec(uint64_t value, Color fnt, Color bgd);
+void videoDriver_printHex(uint64_t value, Color fnt, Color bgd);
+void videoDriver_printBin(uint64_t value, Color fnt, Color bgd);
+void videoDriver_printBase(uint64_t value, uint32_t base, Color fnt, Color bgd);
 
-// Dibuja un rectangulo desde el punto topLeft
-void vdFillRect (int x, int y, int x2, int y2, Color color);
+/* Given topLeft point draws a (color) rectangle */
+void videoDriver_fillRect (int x, int y, int x2, int y2, Color color);
 
-// Getters
+/* Plots a single pixel of a given color, if valid */
+void videoDriver_setPixel(uint16_t x, uint16_t y, Color color);
+
+/* Getters for screen */
 uint16_t getScreenWidth(void);
 uint16_t getScreenHeight(void);
 uint32_t getVideoFrameBuffer(void);
 uint8_t getPixelWidth(void);
-#endif
 
+
+#endif
