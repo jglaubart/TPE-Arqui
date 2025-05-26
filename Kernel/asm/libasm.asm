@@ -1,6 +1,12 @@
 GLOBAL cpuVendor
+GLOBAL getSeconds
+GLOBAL getHours
+GLOBAL getMinutes
+GLOBAL outSpeaker
+GLOBAL inSpeaker
 section .text
 	
+
 cpuVendor:
 	push rbp
 	mov rbp, rsp
@@ -25,49 +31,39 @@ cpuVendor:
 	pop rbp
 	ret
 
+	
+getSeconds:
+	push rbp
+	mov rbp, rsp
 
-; Time and Date
-global getSecs
-global getMins
-global getHours
-global getDay
-global getMonth
-global getYear
-
-getSecs:
-    mov al, 0
+    mov al, 0x00
     out 70h, al
     in al, 71h
+
+	mov rsp, rbp
+	pop rbp
     ret
 
-getMins:
-    mov al, 2
+getMinutes:
+	push rbp
+	mov rbp, rsp
+
+    mov al, 0x02
     out 70h, al
     in al, 71h
+
+	mov rsp, rbp
+	pop rbp
     ret
 
 getHours:
-    mov al, 4
+	push rbp
+	mov rbp, rsp
+
+    mov al, 0x04
     out 70h, al
     in al, 71h
-    ret
 
-getDay:
-    mov al, 7
-    out 70h, al
-    in al, 71h
-    ret
-
-getMonth:
-    mov al, 8
-    out 70h, al
-    in al, 71h
-    ret
-
-getYear:
-    mov al, 9
-    out 70h, al
-    in al, 71h
-    ret
-
-;End Time and Date
+	mov rsp, rbp
+	pop rbp
+    ret		
