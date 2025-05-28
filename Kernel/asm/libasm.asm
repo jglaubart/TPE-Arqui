@@ -1,12 +1,7 @@
 GLOBAL cpuVendor
-GLOBAL getSeconds
-GLOBAL getHours
-GLOBAL getMinutes
-GLOBAL outSpeaker
-GLOBAL inSpeaker
+
 section .text
 	
-
 cpuVendor:
 	push rbp
 	mov rbp, rsp
@@ -31,7 +26,6 @@ cpuVendor:
 	pop rbp
 	ret
 
-	
 getSeconds:
 	push rbp
 	mov rbp, rsp
@@ -66,28 +60,11 @@ getHours:
 
 	mov rsp, rbp
 	pop rbp
-    ret		
+    ret
 
-
-inSpeaker:
-	push rbp
-	mov rbp, rsp
-
-	mov rdx, rdi
-	in al, dx
-
-	mov rsp, rbp
-	pop rbp
-	ret
-
-outSpeaker:
-	push rbp
-	mov rbp, rsp 
-
-	mov rax, rsi 
-	mov rdx, rdi 
-	out dx, al 
-
-	mov rsp, rbp
-	pop rbp
-	ret
+SECTION .bss
+	aux resq 1
+	regdata_exc		resq	18	; reservamos 18 bytes para guardar los registros para excepciones
+	inforeg	resq	17	; reserve space for 17 qwords (one for each register we want to show on inforeg).
+	hasInforeg 		resb 	1 	; reserve 1 byte for a boolean on whether a regdump has already occurred.
+	control  	resb 	1   ; shift presionado

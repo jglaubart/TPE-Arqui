@@ -1,318 +1,160 @@
-#include "videoDriver.h"
-#include "ibm_vga_8x16.h"
-#include "time.h"
+#include <videoDriver.h>
+#include <fonts.h>
+#include <font_8x16.h>
 
+static Point cursorPos = {0 + X_MARGIN, 0 + Y_MARGIN};
 
 struct vbe_mode_info_structure {
-    uint16_t attributes;        // deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
-    uint8_t window_a;           // deprecated
-    uint8_t window_b;           // deprecated
-    uint16_t granularity;       // deprecated; used while calculating bank numbers
-    uint16_t window_size;
-    uint16_t segment_a;
-    uint16_t segment_b;
-    uint32_t win_func_ptr;      // deprecated; used to switch banks from protected mode without returning to real mode
-    uint16_t pitch;             // number of bytes per horizontal line
-    uint16_t width;             // width in pixels
-    uint16_t height;            // height in pixels
-    uint8_t w_char;             // unused...
-    uint8_t y_char;             // ...
-    uint8_t planes;
-    uint8_t bpp;                // bits per pixel in this mode
-    uint8_t banks;              // deprecated; total number of banks in this mode
-    uint8_t memory_model;   
-    uint8_t bank_size;          // deprecated; size of a bank, almost always 64 KB but may be 16 KB...
-    uint8_t image_pages;
-    uint8_t reserved0;
+	uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
+	uint8_t window_a;			// deprecated
+	uint8_t window_b;			// deprecated
+	uint16_t granularity;		// deprecated; used while calculating bank numbers
+	uint16_t window_size;
+	uint16_t segment_a;
+	uint16_t segment_b;
+	uint32_t win_func_ptr;		// deprecated; used to switch banks from protected mode without returning to real mode
+	uint16_t pitch;			// number of bytes per horizontal line
+	uint16_t width;			// width in pixels
+	uint16_t height;			// height in pixels
+	uint8_t w_char;			// unused...
+	uint8_t y_char;			// ...
+	uint8_t planes;
+	uint8_t bpp;			// bits per pixel in this mode
+	uint8_t banks;			// deprecated; total number of banks in this mode
+	uint8_t memory_model;
+	uint8_t bank_size;		// deprecated; size of a bank, almost always 64 KB but may be 16 KB...
+	uint8_t image_pages;
+	uint8_t reserved0;
+ 
+	uint8_t red_mask;
+	uint8_t red_position;
+	uint8_t green_mask;
+	uint8_t green_position;
+	uint8_t blue_mask;
+	uint8_t blue_position;
+	uint8_t reserved_mask;
+	uint8_t reserved_position;
+	uint8_t direct_color_attributes;
+ 
+	uint32_t framebuffer;		// physical address of the linear frame buffer; write here to draw to the screen
+	uint32_t off_screen_mem_off;
+	uint16_t off_screen_mem_size;	// size of memory in the framebuffer but not being displayed on the screen
+	uint8_t reserved1[206];
+} __attribute__ ((packed));
 
-    uint8_t red_mask;
-    uint8_t red_position;
-    uint8_t green_mask;
-    uint8_t green_position;
-    uint8_t blue_mask;
-    uint8_t blue_position;
-    uint8_t reserved_mask;
-    uint8_t reserved_position;
-    uint8_t direct_color_attributes;
+typedef struct vbe_mode_info_structure * VBEInfoPtr;
 
-    uint32_t framebuffer;           // physical address of the linear frame buffer; write here to draw to the screen
-    uint32_t off_screen_mem_off;
-    uint16_t off_screen_mem_size;   // size of memory in the framebuffer but not being displayed on the screen
-    uint8_t reserved1[206];
-} __attribute__ ((packed));         // no alinea en memoria
+VBEInfoPtr VBE_mode_info = (VBEInfoPtr) 0x0000000000005C00;
 
-struct vbe_mode_info_structure* screenInfo = (void*)0x5C00;
+unsigned int isValidX(uint64_t x);
+unsigned int isValidY(uint64_t y);
 
-///////////// 
-Color RED = {30,30,255};
-Color WHITE = {255,255,255};
-Color BLACK = {0,0,0};
-Color BLUE = {255,0,0};
-/////////////
+void resetX();
+void resetY();
 
-/* draws a char in screen in the given coordinates, then sets the coordinates where the next char should be drawn */
-static void drawChar (int x, int y, unsigned char c,Color fntColor, Color bgColor);
-/* Moves everything up one line */
-static void scrollUp ();
-/* get a number in dec from another base */
-static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
-/* Gets the pixel pointer in screen from the (x,y) coordinate*/
-static uint32_t* getPixelPtr(uint16_t x, uint16_t y);
-
-
-
-//tendria que modificar esto para que pueda cambiar el tamanio de la letra
-// Ajusta los valores predeterminados
-const uint16_t CHAR_WIDTH = 9;
-const uint16_t CHAR_HEIGHT = 16;
-
-//////////////////////////////////////////////////////////////////////////////////
-
-
-// Establecer un factor de escala predeterminado
-uint8_t pixelScale = 1;
-
-// Aumentar el factor de escala para aumentar el tamaño de un carácter
-void increasePixelScale() {
-    if (pixelScale < 5) {
-        pixelScale++;
-    }
-}
-
-// Disminuir el factor de escala para reducir el tamaño de un carácter
-void decreasePixelScale() {
-    if (pixelScale > 1) {
-        pixelScale--;
-    }
-}
-
-// Obtener el ancho real de un carácter según el factor de escala actual
-uint16_t getRealCharWidth() {
-    return CHAR_WIDTH * pixelScale;
-}
-
-// Obtener el alto real de un carácter según el factor de escala actual
-uint16_t getRealCharHeight() {
-    return CHAR_HEIGHT * pixelScale;
+void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
+    uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
+    uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch);
+    framebuffer[offset]     =  (hexColor) & 0xFF;
+    framebuffer[offset+1]   =  (hexColor >> 8) & 0xFF; 
+    framebuffer[offset+2]   =  (hexColor >> 16) & 0xFF;
 }
 
 
 
-//////////////////////////////////////////////////////////////////////////////////
-/* screen coordinates where the next char will be written */
-uint16_t cursorX = 0;
-uint16_t cursorY = 0;
+void drawChar(Point topLeft, char c, uint32_t color, const struct font_desc *desc, unsigned int font_size){
 
-static char buffer[64] = { '0' };
+	//put pixel para el char con el bitmap
+	for(int i = 0; i < desc->height * font_size; i++){
+		for(int j = 0; j < desc->width * font_size; j++){
+			int condition = desc->data[c * desc->height + i / font_size];
+			condition = condition & (1 << (desc->width - 1 - j / font_size));
+			if(condition){
+				putPixel(color, topLeft.x + j, topLeft.y + i);
+			}
+		}
+	}
 
-
-void videoDriver_prints(const char *str, Color fnt, Color bgd){
-    for (int i = 0 ; str[i] != '\0'; i++ ){
-        videoDriver_print(str[i], fnt, bgd);
-    }
+	return;
 }
 
-
-void videoDriver_print(const char c, Color fnt, Color bgd){
-    switch (c) {
-        case '\n':
-            videoDriver_newline();
-        break;
-        case '\b':
-            videoDriver_backspace(fnt, bgd);
-        break;
-        case '\0':
-            /* nada, no imprime nada */
-        break;
-        default:
-            drawChar(cursorX, cursorY , c , fnt , bgd);
-        break;
-    }
+void printString(Point topLeft, char *string, uint32_t color, char *font_name, unsigned int font_size){
+	const struct font_desc *desc = find_font(font_name);
+	int i = 0;
+	while(string[i] != 0){
+		drawChar(topLeft, string[i], color, desc, font_size);
+		topLeft.x += desc->width * font_size;
+		i++;
+	}
 }
 
+/* void printCharWorks(Point topLeft, char c, uint32_t color, unsigned int font_size){
+	//put pixel para el char con el bitmap
+	for(int i = 0; i < CHAR_HEIGHT * font_size; i++){
+		for(int j = 0; j < CHAR_WIDTH * font_size; j++){
+			int condition = fontdata_8x16[c * 16 + i / font_size];
+			condition = condition & (1 << (CHAR_WIDTH - 1 - j / font_size));
+			if(condition){
+				putPixel(color, topLeft.x + j, topLeft.y + i);
+			}
+		}
+	}
 
-void videoDriver_newline(){
-    cursorX = 0;
-    cursorY += CHAR_HEIGHT* pixelScale;
+	return;
+} */
 
-    if (cursorY + CHAR_HEIGHT*pixelScale > screenInfo->height){
-        cursorY -= CHAR_HEIGHT*pixelScale;
-        scrollUp();
-    }
+uint64_t putChar(char c, uint32_t color, char *font_name, unsigned int font_size){
+
+	const struct font_desc *desc = find_font(font_name);
+	drawChar(cursorPos, c, color, desc, font_size);
+	cursorPos.x += desc->width * font_size;
+
+	if(isValidX(cursorPos.x + desc->width * font_size) == 0){
+		resetCursor_x();
+		cursorPos.y += desc->height * font_size;
+		if(isValidY(cursorPos.y + desc->height * font_size) == 0){
+			resetCursor_y();
+		}
+	}
+
+	return 1;
 }
 
-
-void videoDriver_backspace(Color fnt, Color bgd){
-    if (cursorX >= CHAR_WIDTH*pixelScale){
-        cursorX -= CHAR_WIDTH*pixelScale;
-    } else {
-        cursorX = 0;
-    }
-    drawChar(cursorX, cursorY , ' ' , fnt , bgd);
-    cursorX -= CHAR_WIDTH*pixelScale;
+uint64_t putString(const char *string, uint32_t color, char *font_name, unsigned int font_size){
+	int i = 0;
+	while(string[i] != 0){
+		putChar(string[i], color, font_name, font_size);
+		i++;
+	}
+	return 1;
 }
 
-
-void clearScreen (Color color) {
-    Color* pixel = (Color*) ((uint64_t)screenInfo->framebuffer);
-
-    //recorro todos los pixeles de la pantalla y los pongo del color que quiero
-    for (uint32_t len = (uint32_t)screenInfo->width * screenInfo->height; len; len--, pixel++){
-        *pixel = color;
-    }
-
-    //seteo los cursores en el inicio (arriba a la izquierda)
-    cursorX = 0;
-    cursorY = 0;
+uint64_t putNString(const char *string, uint32_t color, char *font_name, unsigned int font_size, uint64_t n){
+	uint64_t res = 0;
+	int i = 0;
+	while(string[i] != 0 && i < n){
+		res += putChar(string[i], color, font_name, font_size);
+		i++;
+	}
+	return res;
 }
 
-
-static void drawChar(int x, int y, unsigned char c, Color fntColor, Color bgColor) {
-    //con estos indices recorro el caracter
-    int cx, cy;
-    //mascara de bits para saber que color imprimo a pantalla, si pertenece a caracter o a fondo
-    int mask[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-    //puntero a donde inician los datos de mi caracter, hago (c-32 pues los caracteres imprimibles arrancan en el 32), lo multiplico por 16 pues es lo que ocupa
-    //un caracter en el bitmap
-    const unsigned char *glyph = IBM_VGA_8x16_glyph_bitmap + 16 * (c - 32);
-
-    // Chequeo que no sea el final de línea, ni el final de la pantalla
-    if (cursorX >= screenInfo->width) {
-        cursorX = 0;
-        if (cursorY + getRealCharHeight() > screenInfo->height) {
-            cursorY -= getRealCharHeight();
-            scrollUp();
-        } else {
-            cursorY += getRealCharHeight();
-        }
-    }
-
-    for (cy = 0; cy < 16; cy++) {
-        for (cx = 0; cx < 8; cx++) {
-            // Uso el factor de escala
-            for (int i = 0; i < pixelScale; i++) {
-                for (int j = 0; j < pixelScale; j++) {
-                    videoDriver_setPixel(cursorX + (8 - cx) * pixelScale + i, cursorY + cy * pixelScale + j, glyph[cy] & mask[cx] ? fntColor : bgColor);
-                }
-            }
-        }
-    }
-
-    cursorX += getRealCharWidth();
+void resetCursor_x(){
+	cursorPos.x = 0 + X_MARGIN;
 }
 
-
-
-static void scrollUp (){
-    Color* pixel, *next;
-    for (int i = 0 ; i < cursorY + CHAR_HEIGHT*pixelScale ; i++){
-        for (int j = 0 ; j < screenInfo->width ; j++){
-            pixel = (Color *) getPixelPtr(j,i);
-            next = (Color *) getPixelPtr(j,i+CHAR_HEIGHT*pixelScale);
-            *pixel = *next;
-        }
-    }
+void resetCursor_y(){
+	cursorPos.y = 0 + Y_MARGIN;
 }
 
-
-void videoDriver_printDec(uint64_t value, Color fnt, Color bgd){
-    videoDriver_printBase(value, 10,fnt,bgd);
+unsigned int isValidX(uint64_t x){
+	if(x > (DIM_X - X_MARGIN) || x < X_MARGIN)
+		return 0;
+	return 1;
 }
 
-void videoDriver_printHex(uint64_t value, Color fnt, Color bgd){
-    videoDriver_printBase(value, 16,fnt,bgd);
-}
-
-void videoDriver_printBin(uint64_t value, Color fnt, Color bgd){
-    videoDriver_printBase(value, 2,fnt,bgd);
-}
-
-void videoDriver_printBase(uint64_t value, uint32_t base, Color fnt, Color bgd){
-    uintToBase(value, buffer, base);
-    for (int i = 0 ; buffer[i] != '\0' ; i++ ){
-        videoDriver_print(buffer[i], fnt, bgd);
-    }
-}
-
-
-static uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base){
-    char *p = buffer;
-    char *p1, *p2;
-    uint32_t digits = 0;
-
-    //Calculate characters for each digit
-    do{
-        uint32_t remainder = value % base;
-        *p++ = (remainder < 10) ? remainder + '0' : remainder + 'A' - 10;
-        digits++;
-    }while (value /= base);
-
-    // Terminate string in buffer.
-    *p = 0;
-
-    //Reverse string in buffer.
-    p1 = buffer;
-    p2 = p - 1;
-    while (p1 < p2){
-        char tmp = *p1;
-        *p1 = *p2;
-        *p2 = tmp;
-        p1++;
-        p2--;
-    }
-    return digits;
-}
-
-
-static uint32_t* getPixelPtr(uint16_t x, uint16_t y) { //paso una coordenada y devuelvo que direccion de la pantalla equivale a ese pixel
-    uint8_t pixelwidth = screenInfo->bpp/8;     //la cantidad de bytes hasta el siguiente pixel a la derecha (bpp: BITS per px)
-    uint16_t pixelHeight = screenInfo->pitch;   //la cantidad de bytes hasta el pixel hacia abajo
-
-    uintptr_t pixelPtr = (uintptr_t)(screenInfo->framebuffer) + (x * pixelwidth) + (y * pixelHeight);
-    return (uint32_t*)pixelPtr;
-}
-
-
-
-//pinto un pixel de la pantalla con el color que le paso, 
-void videoDriver_setPixel(uint16_t x, uint16_t y, Color color) {
-    if (x >= screenInfo->width || y >= screenInfo->height)
-        return;
-
-    Color* pixel = (Color*) getPixelPtr(x, y);
-    *pixel = color;
-}
-
-
-//dibujo un cuadrado
-void videoDriver_fillRect (int x, int y, int pixelWidth, int pixelHeight, Color color){
-    Color * pixel;
-
-    for (int i = 0 ; i < pixelHeight ; i++){
-        pixel = (Color*) getPixelPtr(x,y+i);
-        for (int j = 0 ; j < pixelWidth ; j++, pixel++){
-            *pixel = color;
-        }
-    }
-}
-
-
-uint16_t getScreenWidth(void) {
-    return screenInfo->width;
-}
-
-uint16_t getScreenHeight(void) {
-    return screenInfo->height;
-}
-
-uint32_t getVideoFrameBuffer(void) {
-    return screenInfo->framebuffer;
-}
-
-uint8_t getPixelWidth(void){
-    return screenInfo->bpp;
-}
-
-uint16_t getScreenPitch(void){
-    return screenInfo->pitch;
+unsigned int isValidY(uint64_t y){
+	if(y > (DIM_Y - Y_MARGIN) || y < Y_MARGIN)
+		return 0;
+	return 1;
 }

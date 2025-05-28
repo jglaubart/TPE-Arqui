@@ -1,49 +1,4 @@
 #include <stdint.h>
-#include <stdint.h>
-#include "videoDriver.h"
-#include "time.h"
-
-#define ZERO_ID 0
-#define INVAL_OPCODE_ID 6
-
-extern void reset();
-extern int _hlt(void);
-static void convertToHex(uint64_t number, char buffer[16]);
-void handle_exception(int ex, const uint64_t regs[17]);
-
-Color red = {30,30,255};
-Color white = {255,255,255};
-Color black = {0,0,0};
-Color blue = {255,0,0};
-
-const char * registers[18] = {
-    "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15", "RIP", "RFLAGS "
-};
-
-void handle_exception(int ex, const uint64_t regs[17]) {
-    char buffer[19];
-    buffer[0] = '0';
-    buffer[1] = 'x';
-    buffer[18] = '\0';
-
-    if (ex == ZERO_ID)
-        videoDriver_prints("\nERROR! CPU EXCEPTION - Division by zero\n", white, red);
-    else if (ex == INVAL_OPCODE_ID)
-        videoDriver_prints("\nERROR! CPU EXCEPTION - Invalid opcode\n", white, red);
-
-    for (int i = 0; i < 18; i++) {
-        videoDriver_prints(registers[i], white, black);
-        videoDriver_prints(" - ", white, black);
-        convertToHex(regs[i], buffer + 2);
-        videoDriver_prints(buffer, white, black);
-        if (i % 4 == 3)
-            videoDriver_newline();
-        else
-            videoDriver_prints(" || ", white, black);
-    }
-
-    reset();
-}
 
 void * memset(void * destination, int32_t c, uint64_t length)
 {
@@ -92,17 +47,4 @@ void * memcpy(void * destination, const void * source, uint64_t length)
 	}
 
 	return destination;
-}
-
-static void convertToHex(uint64_t number, char buffer[16]) {
-    int index = 15;
-    do {
-        int remainder = number % 16;
-        if (remainder < 10)
-            buffer[index] = remainder + '0';
-        else
-            buffer[index] = remainder + 'A' - 10;
-        number /= 16;
-        index--;
-    } while (index != -1);
 }
