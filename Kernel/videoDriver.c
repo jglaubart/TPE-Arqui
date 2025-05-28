@@ -46,12 +46,6 @@ typedef struct vbe_mode_info_structure * VBEInfoPtr;
 
 VBEInfoPtr VBE_mode_info = (VBEInfoPtr) 0x0000000000005C00;
 
-unsigned int isValidX(uint64_t x);
-unsigned int isValidY(uint64_t y);
-
-void resetX();
-void resetY();
-
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
     uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
     uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch);
@@ -62,7 +56,7 @@ void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
 
 
 
-void drawChar(Point topLeft, char c, uint32_t color, const struct font_desc *desc, unsigned int font_size){
+void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color, const struct font_desc *desc, unsigned int font_size){
 
 	//put pixel para el char con el bitmap
 	for(int i = 0; i < desc->height * font_size; i++){
@@ -71,6 +65,8 @@ void drawChar(Point topLeft, char c, uint32_t color, const struct font_desc *des
 			condition = condition & (1 << (desc->width - 1 - j / font_size));
 			if(condition){
 				putPixel(color, topLeft.x + j, topLeft.y + i);
+			}else{
+				putPixel(bg_color, topLeft.x + j, topLeft.y + i);
 			}
 		}
 	}
@@ -78,62 +74,50 @@ void drawChar(Point topLeft, char c, uint32_t color, const struct font_desc *des
 	return;
 }
 
-void printString(Point topLeft, char *string, uint32_t color, char *font_name, unsigned int font_size){
-	const struct font_desc *desc = find_font(font_name);
-	int i = 0;
-	while(string[i] != 0){
-		drawChar(topLeft, string[i], color, desc, font_size);
-		topLeft.x += desc->width * font_size;
-		i++;
-	}
-}
 
-/* void printCharWorks(Point topLeft, char c, uint32_t color, unsigned int font_size){
-	//put pixel para el char con el bitmap
-	for(int i = 0; i < CHAR_HEIGHT * font_size; i++){
-		for(int j = 0; j < CHAR_WIDTH * font_size; j++){
-			int condition = fontdata_8x16[c * 16 + i / font_size];
-			condition = condition & (1 << (CHAR_WIDTH - 1 - j / font_size));
-			if(condition){
-				putPixel(color, topLeft.x + j, topLeft.y + i);
-			}
+uint64_t putChar(char c, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size){
+
+	const struct font_desc *desc = find_font(font_name);
+	if(c == '\n'){
+		newline(desc, font_size);
+		return 1;
+	}
+	if(c == '\b'){
+		backspace(desc, font_size, bg_color);
+		return 1;
+	}
+	if(c == '\t'){
+		for(int i = 0; i < 4; i++){
+			putChar(' ', color, bg_color, font_name, font_size);
 		}
+		return 1;
 	}
-
-	return;
-} */
-
-uint64_t putChar(char c, uint32_t color, char *font_name, unsigned int font_size){
-
-	const struct font_desc *desc = find_font(font_name);
-	drawChar(cursorPos, c, color, desc, font_size);
-	cursorPos.x += desc->width * font_size;
+	else{
+		drawChar(cursorPos, c, color, bg_color, desc, font_size);
+		cursorPos.x += desc->width * font_size;
+	}
 
 	if(isValidX(cursorPos.x + desc->width * font_size) == 0){
-		resetCursor_x();
-		cursorPos.y += desc->height * font_size;
-		if(isValidY(cursorPos.y + desc->height * font_size) == 0){
-			resetCursor_y();
-		}
+		newline(desc, font_size);
 	}
 
 	return 1;
 }
 
-uint64_t putString(const char *string, uint32_t color, char *font_name, unsigned int font_size){
+uint64_t putString(const char *string, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size){
 	int i = 0;
 	while(string[i] != 0){
-		putChar(string[i], color, font_name, font_size);
+		putChar(string[i], color, bg_color, font_name, font_size);
 		i++;
 	}
 	return 1;
 }
 
-uint64_t putNString(const char *string, uint32_t color, char *font_name, unsigned int font_size, uint64_t n){
+uint64_t putNString(const char *string, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size, uint64_t n){
 	uint64_t res = 0;
 	int i = 0;
 	while(string[i] != 0 && i < n){
-		res += putChar(string[i], color, font_name, font_size);
+		res += putChar(string[i], color, bg_color, font_name, font_size);
 		i++;
 	}
 	return res;
@@ -157,4 +141,23 @@ unsigned int isValidY(uint64_t y){
 	if(y > (DIM_Y - Y_MARGIN) || y < Y_MARGIN)
 		return 0;
 	return 1;
+}
+
+void newline(const struct font_desc *desc, unsigned int font_size){
+	resetCursor_x();
+	cursorPos.y += desc->height * font_size;
+	if(isValidY(cursorPos.y + desc->height * font_size) == 0){
+		resetCursor_y();
+	}
+}
+
+void backspace(const struct font_desc *desc, unsigned int font_size, uint32_t bgc){
+	if (isValidX(cursorPos.x - desc->width)) {
+        cursorPos.x -= desc->width;
+    } else {
+
+    
+    	drawChar(cursorPos, ' ', bgc, bgc, desc, font_size);
+    	cursorPos.x -= desc->width;
+	}
 }

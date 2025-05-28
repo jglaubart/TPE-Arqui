@@ -23,16 +23,22 @@ typedef struct {
  */
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y);
 
-void drawChar(Point topLeft, char c, uint32_t color, const struct font_desc *desc, unsigned int font_size);
+void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color, const struct font_desc *desc, unsigned int font_size);
 
-void printString(Point topLeft, char *string, uint32_t color, char *font_name, unsigned int font_size);
+uint64_t putChar(char c, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size);
 
-void printCharWorks(Point topLeft, char c, uint32_t color, unsigned int font_size);
+uint64_t putString(const char *string, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size);
 
-uint64_t putChar(char c, uint32_t color, char *font_name, unsigned int font_size);
+uint64_t putNString(const char *string, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size, uint64_t n);
 
-uint64_t putString(const char *string, uint32_t color, char *font_name, unsigned int font_size);
+unsigned int isValidX(uint64_t x);
+unsigned int isValidY(uint64_t y);
 
-uint64_t putNString(const char *string, uint32_t color, char *font_name, unsigned int font_size, uint64_t n);
+void resetX();
+void resetY();
+
+void newline(const struct font_desc *desc, unsigned int font_size);
+
+void backspace(const struct font_desc *desc, unsigned int font_size, uint32_t bgc);
 
 #endif
