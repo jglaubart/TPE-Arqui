@@ -21,6 +21,16 @@ int main() {
 	puts("hola7");
 	puts("\n\n\n\n\n\n\n\n");
 	puts("hola8");
+	puts("hola1");
+	puts("hola1");
+	puts("hola1");
+	puts("hola1");
+	puts("hola1");
+	puts("hola1");
+	puts("hola1");
+	puts("hola1");
+	puts("hola1");
+	puts("hola1");
 
 	return 0;
 }
