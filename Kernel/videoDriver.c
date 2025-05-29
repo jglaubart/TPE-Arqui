@@ -79,7 +79,7 @@ uint64_t putChar(char c, uint32_t color, uint32_t bg_color, char *font_name, uns
 
 	const struct font_desc *desc = find_font(font_name);
 	if(c == '\n'){
-		newline(desc, font_size);
+		newline(desc, font_size, bg_color);
 		return 1;
 	}
 	if(c == '\b'){
@@ -98,7 +98,7 @@ uint64_t putChar(char c, uint32_t color, uint32_t bg_color, char *font_name, uns
 	}
 
 	if(isValidX(cursorPos.x + desc->width * font_size) == 0){
-		newline(desc, font_size);
+		newline(desc, font_size, bg_color);
 	}
 
 	return 1;
@@ -132,32 +132,65 @@ void resetCursor_y(){
 }
 
 unsigned int isValidX(uint64_t x){
-	if(x > (DIM_X - X_MARGIN) || x < X_MARGIN)
+	if(x > (VBE_mode_info->width - X_MARGIN) || x < X_MARGIN)
 		return 0;
 	return 1;
 }
 
 unsigned int isValidY(uint64_t y){
-	if(y > (DIM_Y - Y_MARGIN) || y < Y_MARGIN)
+	if(y > (VBE_mode_info->height - Y_MARGIN) || y < Y_MARGIN)
 		return 0;
 	return 1;
 }
 
-void newline(const struct font_desc *desc, unsigned int font_size){
+void newline(const struct font_desc *desc, unsigned int font_size, uint32_t bg_color){
 	resetCursor_x();
 	cursorPos.y += desc->height * font_size;
 	if(isValidY(cursorPos.y + desc->height * font_size) == 0){
-		resetCursor_y();
+		scrollUp(desc, font_size, bg_color);
 	}
 }
 
 void backspace(const struct font_desc *desc, unsigned int font_size, uint32_t bgc){
-	if (isValidX(cursorPos.x - desc->width)) {
-        cursorPos.x -= desc->width;
+	if (isValidX(cursorPos.x - desc->width * font_size)) {
+        cursorPos.x -= desc->width * font_size;
     } else {
+		resetCursor_x();
+	}
 
-    
-    	drawChar(cursorPos, ' ', bgc, bgc, desc, font_size);
-    	cursorPos.x -= desc->width;
+	drawChar(cursorPos, ' ', bgc, bgc, desc, font_size);
+}
+
+void clearScreen(uint32_t bg_color){
+	for(int i = 0; i < VBE_mode_info->height; i++){
+		for(int j = 0; j < VBE_mode_info->width; j++){
+			putPixel(bg_color, j, i);
+		}
+	}
+}
+
+void scrollUp(const struct font_desc *desc, unsigned int font_size, uint32_t bg_color){
+	uint8_t *framebuffer = (uint8_t*)VBE_mode_info->framebuffer;
+	uint64_t row_size = VBE_mode_info->pitch * desc->height * font_size;
+	uint64_t screen_size = VBE_mode_info->pitch * VBE_mode_info->height;
+
+	// Move framebuffer up by one text row
+	for (uint64_t i = 0; i < screen_size - row_size; i++) {
+		framebuffer[i] = framebuffer[i + row_size];
+	}
+
+	// Clear the last row
+	for (uint64_t i = screen_size - row_size; i < screen_size; i++) {
+		framebuffer[i] = (bg_color) & 0xFF;
+		if (VBE_mode_info->bpp >= 16) {
+			framebuffer[++i] = (bg_color >> 8) & 0xFF;
+			framebuffer[++i] = (bg_color >> 16) & 0xFF;
+		}
+	}
+
+	// Move cursor to start of last row
+	cursorPos.y -= desc->height * font_size;
+	if (cursorPos.y < Y_MARGIN) {
+		cursorPos.y = Y_MARGIN;
 	}
 }

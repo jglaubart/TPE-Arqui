@@ -4,8 +4,8 @@
 #include <fonts.h>
 // Function declarations and macros for the video driver
 
-#define DIM_X 1024
-#define DIM_Y 768
+#define DIM_X 640
+#define DIM_Y 480
 
 #define X_MARGIN 10
 #define Y_MARGIN 10
@@ -37,8 +37,12 @@ unsigned int isValidY(uint64_t y);
 void resetX();
 void resetY();
 
-void newline(const struct font_desc *desc, unsigned int font_size);
+void newline(const struct font_desc *desc, unsigned int font_size, uint32_t bg_color);
 
 void backspace(const struct font_desc *desc, unsigned int font_size, uint32_t bgc);
+
+void clearScreen(uint32_t bg_color);
+
+void scrollUp(const struct font_desc *desc, unsigned int font_size, uint32_t bg_color);
 
 #endif
