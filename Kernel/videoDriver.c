@@ -1,6 +1,7 @@
 #include <videoDriver.h>
 #include <fonts.h>
 #include <font_8x16.h>
+#include <lib.h>
 
 static Point cursorPos = {0 + X_MARGIN, 0 + Y_MARGIN};
 
@@ -181,12 +182,16 @@ void scrollUp(const struct font_desc *desc, unsigned int font_size, uint32_t bg_
 
 	// Clear the last row
 	for (uint64_t i = screen_size - row_size; i < screen_size; i++) {
-		framebuffer[i] = (bg_color) & 0xFF;
-		if (VBE_mode_info->bpp >= 16) {
+		framebuffer[i] = bg_color;
+		/* if (VBE_mode_info->bpp >= 16) {
 			framebuffer[++i] = (bg_color >> 8) & 0xFF;
 			framebuffer[++i] = (bg_color >> 16) & 0xFF;
-		}
+		} */
 	}
+	/* ESTO ES MUY LENTO, ES MEJOR USAR LA DE ABAJO CON MEMCOPY Y MEMSET PERO TODAVÍA NO FUNCIONA BIEN */
+
+	/* memcpy(framebuffer + row_size, framebuffer, screen_size - row_size);
+	memset(framebuffer, bg_color, row_size); */
 
 	// Move cursor to start of last row
 	cursorPos.y -= desc->height * font_size;

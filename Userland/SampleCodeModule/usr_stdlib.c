@@ -5,20 +5,16 @@
 #define MAX_NUMBER_LENGTH 100
 
 uint64_t puts(const char *string) {
-    uint64_t count = 0;
-    while (*string) {
-        putChar(*string++);
-        count++;
-    }
-    return count;
+    uint64_t count = strlen(string);
+    return sys_call(SYS_WRITE_ID, STDOUT, string, count, 0);
 }
 
 uint64_t putChar(const char c){
-    return sys_call(1, STDOUT, (uint64_t)&c, 1, 0);
+    return sys_call(SYS_WRITE_ID, STDOUT, &c, 1, 0);
 }
 
 uint64_t newLine(){
-    return sys_call(1, STDOUT, "\n", 1, 0);
+    return putChar('\n');
 }
 
 

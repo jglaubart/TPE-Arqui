@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 uint64_t puts(const char *string);
-uint64_t putChar(const char *string);
+uint64_t putChar(const char c);
 uint64_t newLine();
 uint64_t strlen(const char *string);
 
