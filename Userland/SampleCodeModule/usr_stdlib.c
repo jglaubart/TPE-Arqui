@@ -1,11 +1,26 @@
 #include "usr_stdlib.h"
 #include <syscalls.h>
-#include <stdint.h>
 #include <stdarg.h>
 
+#define MAX_NUMBER_LENGTH 100
+
 uint64_t puts(const char *string) {
-    return sys_call(1, STDOUT, string, strlen(string), 0);
+    uint64_t count = 0;
+    while (*string) {
+        putChar(*string++);
+        count++;
+    }
+    return count;
 }
+
+uint64_t putChar(const char c){
+    return sys_call(1, STDOUT, (uint64_t)&c, 1, 0);
+}
+
+uint64_t newLine(){
+    return sys_call(1, STDOUT, "\n", 1, 0);
+}
+
 
 uint64_t strlen(const char *string) {
     uint64_t length = 0;
@@ -14,3 +29,86 @@ uint64_t strlen(const char *string) {
     }
     return length;
 }
+
+//static
+void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff){
+    uint32_t i = start;
+    if (num == 0)
+        buff[i++] = '0';
+    while (i < MAX_NUMBER_LENGTH - 1 && num > 0)
+    {
+        buff[i++] = (num % 10) + '0';
+        num /= 10;
+    }
+    buff[i] = 0;
+    uint32_t revit = start;
+    uint32_t revend = i - 1;
+    while (revit < revend)
+    {
+        char aux = buff[revit];
+        buff[revit] = buff[revend];
+        buff[revend] = aux;
+        revit++;
+        revend--;
+    }
+}
+
+//static
+void signed_num_to_str(int32_t num, char *buff){
+    uint32_t i = 0;
+    if (num < 0)
+    {
+        buff[i++] = '-';
+        num = -num;
+    }
+    unsigned_num_to_str(num, i, buff);
+}
+
+//static
+uint32_t unsigned_str_to_num(uint64_t *it, uint64_t buff_length, char *buff){
+    uint32_t num = 0;
+    uint64_t i = *it;
+    char debug[100];
+    while (i < buff_length && buff[i] != ' ' && buff[i] != '\t')
+    {
+        num = num * 10 + (buff[i++] - '0');
+    }
+    *it = i;
+    return num;
+}
+
+//static
+void unsigned_num_to_hex_str(uint32_t num, char *buff){
+    char hexDigits[] = "0123456789ABCDEF";
+    uint32_t i = 0;
+    if (num == 0)
+        buff[i++] = '0';
+    while (i < MAX_NUMBER_LENGTH - 1 && num > 0)
+    {
+        buff[i++] = hexDigits[num % 16];
+        num /= 16;
+    }
+    buff[i] = 0;
+    uint32_t revit = 0;
+    uint32_t revend = i - 1;
+    while (revit < revend)
+    {
+        char aux = buff[revit];
+        buff[revit] = buff[revend];
+        buff[revend] = aux;
+        revit++;
+        revend--;
+    }
+}
+
+//static
+int32_t signed_str_to_num(uint64_t *it, uint64_t buff_length, char *buff){
+    int32_t mult = 1;
+    if (buff[*it] == '-')
+    {
+        mult = -1;
+        (*it)++;
+    }
+    return mult * unsigned_str_to_num(it, buff_length, buff);
+}
+
