@@ -1,5 +1,6 @@
 #include "syscall_handler.h"
 #include "videoDriver.h"
+#include "keyboardDriver.h"
 #include "lib.h"
 #include <time.h>
 
@@ -9,8 +10,8 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
         case(WRITE_SYSCALL_ID):
             result = sys_write(rdi,(const char *) rsi, rdx);
             break;
-        case(0):
-            result = 0;
+        case(READ_SYSCALL_ID):
+            result = sys_read(rdi, (char *) rsi, rdx);
             break;
         default:
             result = -1;
@@ -39,4 +40,14 @@ uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){
     }
 
     return putNString(buf, default_color, default_bg_color, default_font, default_font_size, count);
+}
+
+uint64_t sys_read(uint64_t fd, char *buf, uint64_t count){
+    unsigned char c = nextFromBuffer();
+    int i;
+    for(i = 0; i < count && c != 0; i++){ 
+        buf[i] = c;
+        c = nextFromBuffer();
+    }
+    return i;
 }
