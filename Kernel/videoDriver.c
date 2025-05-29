@@ -175,7 +175,7 @@ void scrollUp(const struct font_desc *desc, unsigned int font_size, uint32_t bg_
 	uint64_t row_size = VBE_mode_info->pitch * desc->height * font_size;
 	uint64_t screen_size = VBE_mode_info->pitch * VBE_mode_info->height;
 
-	// Move framebuffer up by one text row
+	/* // Move framebuffer up by one text row
 	for (uint64_t i = 0; i < screen_size - row_size; i++) {
 		framebuffer[i] = framebuffer[i + row_size];
 	}
@@ -183,15 +183,31 @@ void scrollUp(const struct font_desc *desc, unsigned int font_size, uint32_t bg_
 	// Clear the last row
 	for (uint64_t i = screen_size - row_size; i < screen_size; i++) {
 		framebuffer[i] = bg_color;
-		/* if (VBE_mode_info->bpp >= 16) {
+		if (VBE_mode_info->bpp >= 16) {
 			framebuffer[++i] = (bg_color >> 8) & 0xFF;
 			framebuffer[++i] = (bg_color >> 16) & 0xFF;
-		} */
-	}
+		}
+	} */
 	/* ESTO ES MUY LENTO, ES MEJOR USAR LA DE ABAJO CON MEMCOPY Y MEMSET PERO TODAVÍA NO FUNCIONA BIEN */
 
-	/* memcpy(framebuffer + row_size, framebuffer, screen_size - row_size);
-	memset(framebuffer, bg_color, row_size); */
+	memcpy(
+		framebuffer,
+		framebuffer + row_size,
+		screen_size - row_size
+	);
+
+	// Clear the last row using memset for each pixel component
+	uint64_t last_row_offset = screen_size - row_size;
+	uint8_t r = (bg_color) & 0xFF;
+	uint8_t g = (bg_color >> 8) & 0xFF;
+	uint8_t b = (bg_color >> 16) & 0xFF;
+	uint8_t bpp_bytes = VBE_mode_info->bpp / 8;
+
+	for (uint64_t i = last_row_offset; i < screen_size; i += bpp_bytes) {
+		framebuffer[i] = r;
+		if (bpp_bytes > 1) framebuffer[i + 1] = g;
+		if (bpp_bytes > 2) framebuffer[i + 2] = b;
+	}
 
 	// Move cursor to start of last row
 	cursorPos.y -= desc->height * font_size;

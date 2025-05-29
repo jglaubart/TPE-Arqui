@@ -1,7 +1,8 @@
 #include <shell.h>
 #include <usr_stdlib.h>
 
-static char *instructions[] = {"help", "registers", "time", "pongis_golf", "change_font_size",  "test_zero_division", "test_invalid_opcode", "echo", "clear", 0};
+#define CANT_INSTRUCTIONS 10
+char instructions[CANT_INSTRUCTIONS][50];
 //echo y clear son extras
 
 typedef enum
@@ -16,9 +17,20 @@ typedef enum
     ECHO,
     CLEAR,
 } INSTRUCTION;
+void complete_instructions() {
+    strcpy(instructions[HELP], "help");
+    strcpy(instructions[REGISTERS], "inforeg");
+    strcpy(instructions[TIME], "time");
+    strcpy(instructions[PONGIS_GOLF], "pongis_golf");
+    strcpy(instructions[CHANGE_FONT_SIZE], "font_size");
+    strcpy(instructions[TEST_ZERO_DIVISION], "zero_div");
+    strcpy(instructions[TEST_INVALID_OPCODE], "inv_opcode");
+    strcpy(instructions[ECHO], "echo");
+    strcpy(instructions[CLEAR], "clear");
+}
 
 void startShell(){
-    
+    complete_instructions();
 
     puts("Hello World\bem!\n");
 	putChar('a');

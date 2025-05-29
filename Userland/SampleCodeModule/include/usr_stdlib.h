@@ -7,6 +7,7 @@ uint64_t puts(const char *string);
 uint64_t putChar(const char c);
 uint64_t newLine();
 uint64_t strlen(const char *string);
+char *strcpy(char *dest, const char *src);
 
 void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff);
 void signed_num_to_str(int32_t num, char *buff);

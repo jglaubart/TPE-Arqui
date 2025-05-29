@@ -26,6 +26,16 @@ uint64_t strlen(const char *string) {
     return length;
 }
 
+char *strcpy(char *dest, const char *src) {
+    uint64_t i = 0;
+    while (src[i] != '\0') {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
+    return dest;
+}
+
 //static
 void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff){
     uint32_t i = start;
