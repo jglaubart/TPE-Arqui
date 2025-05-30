@@ -17,6 +17,7 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
             result = -1;
             break;
     }
+    return result;
 }
 
 uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){

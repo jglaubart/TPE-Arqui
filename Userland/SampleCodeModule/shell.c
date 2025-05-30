@@ -39,4 +39,24 @@ void startShell(){
 		newLine();
 	}
 	puts("prueba de auto-scroll\n");
+    char *string = "hola";
+    puts(string);
+
+    char c = getChar();
+    char buffer[10];
+    buffer[0] = c;
+    buffer[1] = '\0';
+    puts(buffer);
+
+    /* char buffer[100];
+    char c = getChar();
+    int i = 0;
+    while(c != '\n'){
+        buffer[i++] = c;
+        c = getChar();
+    }
+    buffer[i] = '\0';
+    puts("You typed: ");
+    puts(buffer);
+    puts("\n"); */
 }

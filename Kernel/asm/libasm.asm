@@ -3,15 +3,12 @@ GLOBAL getKeyPressed
 GLOBAL outb
 GLOBAL inb
 GLOBAL saveRegisters
-GLOBAL getMinutes
-GLOBAL getHours
-GLOBAL getSeconds
 
 EXTERN makeBackup
 EXTERN getRipBackup
 
 section .text
-	
+
 %macro saveRegistersMacro 1
 	mov [%1], rax
 	mov [%1 + 1*8], rbx
@@ -97,46 +94,3 @@ inb:
 
 section .bss
     regsArr resb 144
-
-getSeconds:
-	push rbp
-	mov rbp, rsp
-
-    mov al, 0x00
-    out 70h, al
-    in al, 71h
-
-	mov rsp, rbp
-	pop rbp
-    ret
-
-getMinutes:
-	push rbp
-	mov rbp, rsp
-
-    mov al, 0x02
-    out 70h, al
-    in al, 71h
-
-	mov rsp, rbp
-	pop rbp
-    ret
-
-getHours:
-	push rbp
-	mov rbp, rsp
-
-    mov al, 0x04
-    out 70h, al
-    in al, 71h
-
-	mov rsp, rbp
-	pop rbp
-    ret
-
-SECTION .bss
-	aux resq 1
-	regdata_exc		resq	18	; reservamos 18 bytes para guardar los registros para excepciones
-	inforeg	resq	17	; reserve space for 17 qwords (one for each register we want to show on inforeg).
-	hasInforeg 		resb 	1 	; reserve 1 byte for a boolean on whether a regdump has already occurred.
-	control  	resb 	1   ; shift presionado
