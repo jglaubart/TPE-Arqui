@@ -44,11 +44,11 @@ uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){
 }
 
 uint64_t sys_read(uint64_t fd, char *buf, uint64_t count){
-    unsigned char c = nextFromBuffer();
-    int i;
-    for(i = 0; i < count && c != 0; i++){ 
-        buf[i] = c;
-        c = nextFromBuffer();
+    unsigned char character;
+    uint64_t i = 0;
+    while (i < count && (character = nextFromBuffer()) != 0)
+    {
+        buf[i++] = character;
     }
     return i;
 }

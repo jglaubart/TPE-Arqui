@@ -118,12 +118,12 @@ int32_t signed_str_to_num(uint64_t *it, uint64_t buff_length, char *buff){
     return mult * unsigned_str_to_num(it, buff_length, buff);
 }
 
-uint8_t readChar(char *c){
-    return sys_call(SYS_READ_ID, STDIN, c, 1, 0);
+uint8_t readChar(char c){
+    return sys_call(SYS_READ_ID, STDIN, &c, 1, 0);
 }
 
 char getChar(){
     char c;
-    readChar(&c);
+    readChar(c);
     return c;
 }
