@@ -6,27 +6,27 @@
 static Point cursorPos = {0 + X_MARGIN, 0 + Y_MARGIN};
 
 struct vbe_mode_info_structure {
-	uint16_t attributes;		// deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
-	uint8_t window_a;			// deprecated
-	uint8_t window_b;			// deprecated
-	uint16_t granularity;		// deprecated; used while calculating bank numbers
+	uint16_t attributes;  // deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear frame buffer.
+	uint8_t window_a;	  // deprecated
+	uint8_t window_b;	  // deprecated
+	uint16_t granularity; // deprecated; used while calculating bank numbers
 	uint16_t window_size;
 	uint16_t segment_a;
 	uint16_t segment_b;
-	uint32_t win_func_ptr;		// deprecated; used to switch banks from protected mode without returning to real mode
-	uint16_t pitch;			// number of bytes per horizontal line
-	uint16_t width;			// width in pixels
-	uint16_t height;			// height in pixels
-	uint8_t w_char;			// unused...
-	uint8_t y_char;			// ...
+	uint32_t win_func_ptr; // deprecated; used to switch banks from protected mode without returning to real mode
+	uint16_t pitch;		   // number of bytes per horizontal line
+	uint16_t width;		   // width in pixels
+	uint16_t height;	   // height in pixels
+	uint8_t w_char;		   // unused...
+	uint8_t y_char;		   // ...
 	uint8_t planes;
-	uint8_t bpp;			// bits per pixel in this mode
-	uint8_t banks;			// deprecated; total number of banks in this mode
+	uint8_t bpp;   // bits per pixel in this mode
+	uint8_t banks; // deprecated; total number of banks in this mode
 	uint8_t memory_model;
-	uint8_t bank_size;		// deprecated; size of a bank, almost always 64 KB but may be 16 KB...
+	uint8_t bank_size; // deprecated; size of a bank, almost always 64 KB but may be 16 KB...
 	uint8_t image_pages;
 	uint8_t reserved0;
- 
+
 	uint8_t red_mask;
 	uint8_t red_position;
 	uint8_t green_mask;
@@ -36,10 +36,10 @@ struct vbe_mode_info_structure {
 	uint8_t reserved_mask;
 	uint8_t reserved_position;
 	uint8_t direct_color_attributes;
- 
-	uint32_t framebuffer;		// physical address of the linear frame buffer; write here to draw to the screen
+
+	uint32_t framebuffer; // physical address of the linear frame buffer; write here to draw to the screen
 	uint32_t off_screen_mem_off;
-	uint16_t off_screen_mem_size;	// size of memory in the framebuffer but not being displayed on the screen
+	uint16_t off_screen_mem_size; // size of memory in the framebuffer but not being displayed on the screen
 	uint8_t reserved1[206];
 } __attribute__ ((packed));
 
@@ -47,19 +47,27 @@ typedef struct vbe_mode_info_structure * VBEInfoPtr;
 
 VBEInfoPtr VBE_mode_info = (VBEInfoPtr) 0x0000000000005C00;
 
+const struct font_desc *default_font_desc = &font_vga_8x16;
+
+static struct font_desc *desc;
+unsigned int default_font_size;
+static unsigned int font_size;
+
+void initVideoDriver(){
+	desc = (struct font_desc *)default_font_desc;
+	default_font_size = (VBE_mode_info->height - 2 * Y_MARGIN) / (DEFAULT_LINES * (desc->height));
+	font_size = default_font_size;
+}
+
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
-    uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
+	uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
     uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch);
     framebuffer[offset]     =  (hexColor) & 0xFF;
     framebuffer[offset+1]   =  (hexColor >> 8) & 0xFF; 
     framebuffer[offset+2]   =  (hexColor >> 16) & 0xFF;
 }
 
-
-
-void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color, const struct font_desc *desc, unsigned int font_size){
-
-	//put pixel para el char con el bitmap
+void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color){
 	for(int i = 0; i < desc->height * font_size; i++){
 		for(int j = 0; j < desc->width * font_size; j++){
 			int condition = desc->data[c * desc->height + i / font_size];
@@ -71,54 +79,60 @@ void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color, const st
 			}
 		}
 	}
-
 	return;
 }
 
+uint64_t putChar(char c, uint32_t color, uint32_t bg_color){
+	// font_name and unused_font_size are ignored now
+	// desc and font_size are used instead
 
-uint64_t putChar(char c, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size){
+	// Optionally, you can still allow font_name to change desc/font_size if you want dynamic font switching
+	// Otherwise, just ignore font_name and unused_font_size
 
-	const struct font_desc *desc = find_font(font_name);
+	if(isValidY(cursorPos.y + desc->height * font_size) == 0){
+		scrollUp(bg_color);
+	}
+
+	if(isValidX(cursorPos.x + desc->width * font_size) == 0){
+		newline(bg_color);
+	}
+
 	if(c == '\n'){
-		newline(desc, font_size, bg_color);
+		newline(bg_color);
 		return 1;
 	}
 	if(c == '\b'){
-		backspace(desc, font_size, bg_color);
+		backspace(bg_color);
 		return 1;
 	}
 	if(c == '\t'){
 		for(int i = 0; i < 4; i++){
-			putChar(' ', color, bg_color, font_name, font_size);
+			putChar(' ', color, bg_color);
 		}
 		return 1;
 	}
 	else{
-		drawChar(cursorPos, c, color, bg_color, desc, font_size);
+		drawChar(cursorPos, c, color, bg_color);
 		cursorPos.x += desc->width * font_size;
-	}
-
-	if(isValidX(cursorPos.x + desc->width * font_size) == 0){
-		newline(desc, font_size, bg_color);
 	}
 
 	return 1;
 }
 
-uint64_t putString(const char *string, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size){
+uint64_t putString(const char *string, uint32_t color, uint32_t bg_color){
 	int i = 0;
 	while(string[i] != 0){
-		putChar(string[i], color, bg_color, font_name, font_size);
+		putChar(string[i], color, bg_color);
 		i++;
 	}
 	return 1;
 }
 
-uint64_t putNString(const char *string, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size, uint64_t n){
+uint64_t putNString(const char *string, uint32_t color, uint32_t bg_color, uint64_t n){
 	uint64_t res = 0;
 	int i = 0;
 	while(string[i] != 0 && i < n){
-		res += putChar(string[i], color, bg_color, font_name, font_size);
+		res += putChar(string[i], color, bg_color);
 		i++;
 	}
 	return res;
@@ -144,22 +158,22 @@ unsigned int isValidY(uint64_t y){
 	return 1;
 }
 
-void newline(const struct font_desc *desc, unsigned int font_size, uint32_t bg_color){
+void newline(uint32_t bg_color){
 	resetCursor_x();
 	cursorPos.y += desc->height * font_size;
 	if(isValidY(cursorPos.y + desc->height * font_size) == 0){
-		scrollUp(desc, font_size, bg_color);
+		scrollUp(bg_color);
 	}
 }
 
-void backspace(const struct font_desc *desc, unsigned int font_size, uint32_t bgc){
+void backspace(uint32_t bgc){
 	if (isValidX(cursorPos.x - desc->width * font_size)) {
-        cursorPos.x -= desc->width * font_size;
-    } else {
+		cursorPos.x -= desc->width * font_size;
+	} else {
 		resetCursor_x();
 	}
 
-	drawChar(cursorPos, ' ', bgc, bgc, desc, font_size);
+	drawChar(cursorPos, ' ', bgc, bgc);
 }
 
 void clearScreen(uint32_t bg_color){
@@ -170,25 +184,10 @@ void clearScreen(uint32_t bg_color){
 	}
 }
 
-void scrollUp(const struct font_desc *desc, unsigned int font_size, uint32_t bg_color){
+void scrollUp(uint32_t bg_color){
 	uint8_t *framebuffer = (uint8_t*)VBE_mode_info->framebuffer;
 	uint64_t row_size = VBE_mode_info->pitch * desc->height * font_size;
 	uint64_t screen_size = VBE_mode_info->pitch * VBE_mode_info->height;
-
-	/* // Move framebuffer up by one text row
-	for (uint64_t i = 0; i < screen_size - row_size; i++) {
-		framebuffer[i] = framebuffer[i + row_size];
-	}
-
-	// Clear the last row
-	for (uint64_t i = screen_size - row_size; i < screen_size; i++) {
-		framebuffer[i] = bg_color;
-		if (VBE_mode_info->bpp >= 16) {
-			framebuffer[++i] = (bg_color >> 8) & 0xFF;
-			framebuffer[++i] = (bg_color >> 16) & 0xFF;
-		}
-	} */
-	/* ESTO ES MUY LENTO, ES MEJOR USAR LA DE ABAJO CON MEMCOPY Y MEMSET PERO TODAVÍA NO FUNCIONA BIEN */
 
 	memcpy(
 		framebuffer,
@@ -214,4 +213,12 @@ void scrollUp(const struct font_desc *desc, unsigned int font_size, uint32_t bg_
 	if (cursorPos.y < Y_MARGIN) {
 		cursorPos.y = Y_MARGIN;
 	}
+}
+
+uint64_t changeFontSize(uint64_t new_font_size){
+	if(desc->height * new_font_size > VBE_mode_info->height - 2 * Y_MARGIN || desc->width * new_font_size > VBE_mode_info->width - 2 * X_MARGIN){
+		return 0;
+	}
+	font_size = new_font_size;
+	return 1;
 }

@@ -54,6 +54,7 @@ void * initializeKernelBinary()
 int main()
 {	
 	load_idt();
+	initVideoDriver();
 
 	((EntryPoint)sampleCodeModuleAddress)();
 

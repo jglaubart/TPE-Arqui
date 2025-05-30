@@ -158,6 +158,7 @@ uint64_t readLine(char *buf, uint64_t size){
 }
 
 int changeFontSize(unsigned int newSize){
-    putChar('\n');
-    return sys_call(SYS_CHANGE_FONT_SIZE, newSize, 0, 0, 0);
+    //putChar('\n');
+    int res = sys_call(SYS_CHANGE_FONT_SIZE, newSize, 0, 0, 0);
+    return res;
 }

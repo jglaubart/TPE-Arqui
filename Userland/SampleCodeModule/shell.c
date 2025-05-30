@@ -52,6 +52,5 @@ void startShell(){
 
     puts("tamaño anterior");
     changeFontSize(10);
-    puts("tamaño nuevo");
-    puts("blablabla");
+    puts("tamaño actual");
 }

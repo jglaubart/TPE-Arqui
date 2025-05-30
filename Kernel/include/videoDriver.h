@@ -10,10 +10,15 @@
 #define X_MARGIN 10
 #define Y_MARGIN 10
 
+#define DEFAULT_LINES 20
+
 typedef struct {
 	uint64_t x;
 	uint64_t y;
 }Point;
+
+void initVideoDriver();
+
 /**
  * @brief Puts a pixel on the screen at the specified coordinates with the given color.
  * 
@@ -23,13 +28,13 @@ typedef struct {
  */
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y);
 
-void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color, const struct font_desc *desc, unsigned int font_size);
+void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color);
 
-uint64_t putChar(char c, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size);
+uint64_t putChar(char c, uint32_t color, uint32_t bg_color);
 
-uint64_t putString(const char *string, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size);
+uint64_t putString(const char *string, uint32_t color, uint32_t bg_color);
 
-uint64_t putNString(const char *string, uint32_t color, uint32_t bg_color, char *font_name, unsigned int font_size, uint64_t n);
+uint64_t putNString(const char *string, uint32_t color, uint32_t bg_color, uint64_t n);
 
 unsigned int isValidX(uint64_t x);
 unsigned int isValidY(uint64_t y);
@@ -37,12 +42,12 @@ unsigned int isValidY(uint64_t y);
 void resetX();
 void resetY();
 
-void newline(const struct font_desc *desc, unsigned int font_size, uint32_t bg_color);
+void newline(uint32_t bg_color);
 
-void backspace(const struct font_desc *desc, unsigned int font_size, uint32_t bgc);
+void backspace(uint32_t bgc);
 
 void clearScreen(uint32_t bg_color);
 
-void scrollUp(const struct font_desc *desc, unsigned int font_size, uint32_t bg_color);
+void scrollUp(uint32_t bg_color);
 
 #endif
