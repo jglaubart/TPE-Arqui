@@ -229,5 +229,5 @@ uint8_t isMappedChar(uint8_t makeCode, int index){
 }
 
 uint8_t isAlpha(char c){
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == 164 || c == 165;
 }

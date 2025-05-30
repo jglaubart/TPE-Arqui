@@ -4,6 +4,8 @@
 #include "lib.h"
 #include <time.h>
 
+static unsigned int font_size = 2;
+
 uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t r9){
     uint64_t result;
     switch(rax){
@@ -12,6 +14,10 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
             break;
         case(READ_SYSCALL_ID):
             result = sys_read(rdi, (char *) rsi, rdx);
+            break;
+        case(CHANGE_FONT_SIZE):
+            font_size = rdi;
+            result = 0;
             break;
         default:
             result = -1;
@@ -23,7 +29,6 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
 uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){
     uint32_t default_color;
     char *default_font = "VGA8x16";
-    unsigned int default_font_size = 2;
     uint32_t default_bg_color = 0x000000;
     switch(fd){
         case(STDOUT):
@@ -40,7 +45,7 @@ uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){
             break;
     }
 
-    return putNString(buf, default_color, default_bg_color, default_font, default_font_size, count);
+    return putNString(buf, default_color, default_bg_color, default_font, font_size, count);
 }
 
 uint64_t sys_read(uint64_t fd, char *buf, uint64_t count){

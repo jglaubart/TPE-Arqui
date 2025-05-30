@@ -118,12 +118,46 @@ int32_t signed_str_to_num(uint64_t *it, uint64_t buff_length, char *buff){
     return mult * unsigned_str_to_num(it, buff_length, buff);
 }
 
-uint8_t readChar(char c){
-    return sys_call(SYS_READ_ID, STDIN, &c, 1, 0);
+uint8_t readChar(char *cp){
+    return sys_call(SYS_READ_ID, STDIN, cp, 1, 0);
 }
 
 char getChar(){
     char c;
-    readChar(c);
+    uint64_t len;
+    while((len = readChar(&c)) < 1);
     return c;
+}
+
+uint64_t readLine(char *buf, uint64_t size){
+    uint64_t i = 0;
+    char c;
+    while((c = getChar()) != '\n'){
+        if(i < size){
+            buf[i] = c;
+        }
+        if(c == '\b' && i > 0){
+            i += putChar(c);
+            if(i < size){
+                buf[i] = '\0';
+            }
+        }else{
+            i += putChar(c);
+        }
+    }
+    putChar('\n');
+    uint64_t ans;
+    if(i < size){
+        buf[i] = '\0';
+        ans = i;
+    }else{
+        buf[size - 1] = '\0';
+        ans = size;
+    }
+    return ans;
+}
+
+int changeFontSize(unsigned int newSize){
+    putChar('\n');
+    return sys_call(SYS_CHANGE_FONT_SIZE, newSize, 0, 0, 0);
 }

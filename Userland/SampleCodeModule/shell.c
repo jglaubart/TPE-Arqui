@@ -33,7 +33,7 @@ void startShell(){
     complete_instructions();
 
     puts("Hello World\bem!\n");
-	putChar('a');
+    //changeFontSize(10);
 	puts("ahorita la andaba yo buscando, pero no la encontre, busque entre mil botellas, pero no la encontre, me dicen el que la encuentra la va a tomar y la va a beber y la va a beber y la va a beber\b\n");
 	for(int i=0; i<25; i++){
 		newLine();
@@ -42,21 +42,16 @@ void startShell(){
     char *string = "hola";
     puts(string);
 
-    char c = getChar();
-    char buffer[10];
-    buffer[0] = c;
-    buffer[1] = '\0';
-    puts(buffer);
+    char buffer[100];
 
-    /* char buffer[100];
-    char c = getChar();
-    int i = 0;
-    while(c != '\n'){
-        buffer[i++] = c;
-        c = getChar();
-    }
-    buffer[i] = '\0';
+    readLine(buffer, 100);
+
     puts("You typed: ");
     puts(buffer);
-    puts("\n"); */
+    puts("\n");
+
+    puts("tamaño anterior");
+    changeFontSize(10);
+    puts("tamaño nuevo");
+    puts("blablabla");
 }
