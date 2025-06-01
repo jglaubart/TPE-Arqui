@@ -10,7 +10,7 @@
 #define X_MARGIN 10
 #define Y_MARGIN 10
 
-#define DEFAULT_LINES 20
+#define DEFAULT_LINES 10
 
 typedef struct {
 	uint64_t x;

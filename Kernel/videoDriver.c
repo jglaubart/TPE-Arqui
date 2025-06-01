@@ -170,7 +170,12 @@ void backspace(uint32_t bgc){
 	if (isValidX(cursorPos.x - desc->width * font_size)) {
 		cursorPos.x -= desc->width * font_size;
 	} else {
-		resetCursor_x();
+		moveCursorEndPrevLine();
+		if(isValidX(cursorPos.x - desc->width * font_size) == 0){
+			resetCursor_x();
+		}else{
+			cursorPos.x -= desc->width * font_size;
+		}
 	}
 
 	drawChar(cursorPos, ' ', bgc, bgc);
@@ -221,4 +226,9 @@ uint64_t changeFontSize(uint64_t new_font_size){
 	}
 	font_size = new_font_size;
 	return 1;
+}
+
+moveCursorEndPrevLine(){
+	cursorPos.x = (VBE_mode_info->width - X_MARGIN) - (VBE_mode_info->width - X_MARGIN * 2) % (desc->width * font_size);
+	cursorPos.y -= desc->height * font_size;
 }
