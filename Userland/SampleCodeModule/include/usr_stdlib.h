@@ -23,4 +23,8 @@ uint64_t readLine(char *buf, uint64_t size);
 int changeFontSize(unsigned int newSize);
 
 
+void InvalidOpCodeTest();
+void zeroDivTest();
+
+
 #endif

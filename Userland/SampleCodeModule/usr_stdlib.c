@@ -1,6 +1,7 @@
 #include "usr_stdlib.h"
 #include <syscalls.h>
 #include <stdarg.h>
+#include <exceptions.h>
 
 #define MAX_NUMBER_LENGTH 100
 
@@ -179,4 +180,11 @@ int changeFontSize(unsigned int newSize){
     //putChar('\n');
     int res = sys_call(SYS_CHANGE_FONT_SIZE, newSize, 0, 0, 0);
     return res;
+}
+
+void InvalidOpCodeTest(){
+    ex_invalid_opcode_exception();
+}
+void zeroDivTest(){
+    ex_zero_division_exception();
 }
