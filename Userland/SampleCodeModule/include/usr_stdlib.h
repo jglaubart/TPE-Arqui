@@ -5,8 +5,10 @@
 
 uint64_t puts(const char *string);
 uint64_t putChar(const char c);
-uint64_t newLine();
+uint64_t isChar(char c);
+uint64_t isDigit(char c);
 uint64_t strlen(const char *string);
+uint64_t strcmp(const char *s1, const char *s2);
 char *strcpy(char *dest, const char *src);
 
 void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff);

@@ -13,10 +13,28 @@ uint64_t putChar(const char c){
     return sys_call(SYS_WRITE_ID, STDOUT, &c, 1, 0);
 }
 
-uint64_t newLine(){
-    return putChar('\n');
+
+uint64_t isChar (char c){
+	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')){
+		return 1;
+	}
+	return 0;
 }
 
+uint64_t isDigit(char c){
+		if (c >= '0' && c <= '9'){
+		return 1;
+	}
+	return 0;
+}
+
+uint64_t strcmp(const char *s1, const char *s2) {
+    while (*s1 && (*s1 == *s2)) {
+        s1++;
+        s2++;
+    }
+    return *(const unsigned char *)s1 - *(const unsigned char *)s2;
+}
 
 uint64_t strlen(const char *string) {
     uint64_t length = 0;
