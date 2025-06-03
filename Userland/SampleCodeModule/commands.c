@@ -19,7 +19,7 @@ void timeCommand(){
 	puts("Comando no implementado\n");
 }
 void clearCommand(){
-	puts("Comando no implementado\n");
+	clearScreen();
 }
 void golfCommand(){
 	puts("Comando no implementado\n");

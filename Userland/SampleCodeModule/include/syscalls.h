@@ -10,8 +10,9 @@ enum {
 };
 
 enum{
-    SYS_WRITE_ID = 1,
     SYS_READ_ID = 0,
+    SYS_WRITE_ID = 1,
+    SYS_CLEAR = 2,
     SYS_CHANGE_FONT_SIZE = 10
 };
 

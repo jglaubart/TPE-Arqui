@@ -59,6 +59,8 @@
   "files.associations": {
     "syscalls.h": "c",
     "syscall_handler.h": "c",
-    "exceptions.h": "c"
+    "exceptions.h": "c",
+    "lib.h": "c",
+    "videodriver.h": "c"
   }
 }

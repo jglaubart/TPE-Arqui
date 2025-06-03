@@ -7,13 +7,16 @@
 uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t r9){
     uint64_t result;
     switch(rax){
-        case(WRITE_SYSCALL_ID):
+        case(SYS_WRITE_ID):
             result = sys_write(rdi,(const char *) rsi, rdx);
             break;
-        case(READ_SYSCALL_ID):
+        case(SYS_READ_ID):
             result = sys_read(rdi, (char *) rsi, rdx);
             break;
-        case(CHANGE_FONT_SIZE):
+        case(SYS_CLEAR_ID):
+            result = sys_clear();
+            break;
+        case(SYS_CHANGE_FONT_SIZE_ID):
             unsigned int new_size = rdi;
             result = changeFontSize(new_size);
             break;
@@ -54,4 +57,10 @@ uint64_t sys_read(uint64_t fd, char *buf, uint64_t count){
         buf[i++] = character;
     }
     return i;
+}
+
+uint64_t sys_clear(){
+    uint32_t bg_color = 0x000000; // Black background
+    clearScreen(bg_color);
+    return 0;
 }

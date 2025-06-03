@@ -188,3 +188,7 @@ void InvalidOpCodeTest(){
 void zeroDivTest(){
     ex_zero_division_exception();
 }
+
+void clearScreen() {
+    sys_call(SYS_CLEAR, 0, 0, 0, 0);
+}

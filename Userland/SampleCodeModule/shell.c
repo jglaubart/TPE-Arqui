@@ -6,7 +6,7 @@
 char instructions[CANT_INSTRUCTIONS][50];
 //echo y clear son extras
 
-typedef enum
+/* typedef enum
 {
     HELP = 0,
     REGISTERS,
@@ -29,7 +29,7 @@ void complete_instructions() {
     strcpy(instructions[TEST_INVALID_OPCODE], "inv_opcode");
     strcpy(instructions[ECHO], "echo");
     strcpy(instructions[CLEAR], "clear");
-}
+} */
 char line[MAX_BUFFER+1] = {0}; //asi me aseguro que al menos va haber un cero
 char parameter[MAX_BUFFER+1] = {0};
 char command[MAX_BUFFER+1] = {0};
@@ -41,8 +41,6 @@ static void readInput();
 static int checkLine();
 
 void startShell(){
-    complete_instructions();
-
     puts("----------------- Shell ---------------\n");
     puts("Available commands:\n");
     showCommands();
