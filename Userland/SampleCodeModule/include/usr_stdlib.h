@@ -2,6 +2,13 @@
 #define _USRLIB_H_
 
 #include <stdint.h>
+typedef enum
+{
+    STDIN = 0,
+    STDOUT = 1,
+    STDERR = 2,
+    STDMARK = 3
+} FileDescriptor;
 
 uint64_t puts(const char *string);
 uint64_t putChar(const char c);
@@ -25,6 +32,7 @@ int changeFontSize(unsigned int newSize);
 
 void InvalidOpCodeTest();
 void zeroDivTest();
-
-
+void getRegisters(); 
+void sleep(uint64_t ticks);
+void getTime();
 #endif

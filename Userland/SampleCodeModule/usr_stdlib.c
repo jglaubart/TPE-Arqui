@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <exceptions.h>
 
+#define MAX_CHARS 1000
 #define MAX_NUMBER_LENGTH 100
 
 uint64_t puts(const char *string) {
@@ -55,6 +56,116 @@ char *strcpy(char *dest, const char *src) {
     return dest;
 }
 
+static uint64_t fdprintfargs(FileDescriptor fd, const char *fmt, va_list args)
+{
+    char buffer[MAX_CHARS] = {0};
+
+    char numstr[MAX_NUMBER_LENGTH] = {0};
+    uint64_t i, j, k;
+    for (i = 0, j = 0; j < MAX_CHARS && fmt[i] != 0; i++)
+    {
+        if (fmt[i + 1] != 0)
+        {
+            if (fmt[i] == '%')
+            {
+                switch (fmt[i + 1])
+                {
+                case 's':;
+                    // Tengo que poner un string
+                    const char *s = va_arg(args, const char *);
+                    k = 0;
+                    while (j < MAX_CHARS && s[k] != 0)
+                        buffer[j++] = s[k++];
+                    i++; // salteo la s
+                    break;
+                case 'd':;
+                    // Tengo que poner un valor entero con signo
+                    int32_t d = va_arg(args, int32_t);
+                    signed_num_to_str(d, numstr);
+                    k = 0;
+                    while (j < MAX_CHARS && numstr[k] != 0)
+                        buffer[j++] = numstr[k++];
+                    i++; // salteo la d
+                    break;
+                case 'u':;
+                    // Tengo que poner un valor entero sin signo
+                    uint32_t u = va_arg(args, uint32_t);
+                    unsigned_num_to_str(u, 0, numstr);
+                    k = 0;
+                    while (j < MAX_CHARS && numstr[k] != 0)
+                        buffer[j++] = numstr[k++];
+                    i++; // salteo la u
+                    break;
+                case 'c':;
+                    // Tengo que poner un caracter
+                    int8_t c = va_arg(args, int);
+                    buffer[j++] = c;
+                    i++; // salteo la c
+                    break;
+                case 'x':;
+                    // Tengo que poner un valor entero en hexadecimal
+                    uint32_t x = va_arg(args, uint32_t);
+                    unsigned_num_to_hex_str(x, numstr);
+                    k = 0;
+                    while (j < MAX_CHARS && numstr[k] != 0)
+                        buffer[j++] = numstr[k++];
+                    i++; // salteo la x
+                    break;
+                default:
+                    // Si no es ninguno pongo el porcentaje
+                    buffer[j++] = '%';
+                    break;
+                }
+            }
+            else if (fmt[i] == '\\')
+            {
+                switch (fmt[i + 1])
+                {
+                case 'n':
+                    buffer[j++] = '\n';
+                    i++;
+                    break;
+                case 't':
+                    buffer[j++] = '\t';
+                    i++;
+                    break;
+                default:
+                    buffer[j++] = '\\';
+                    i++;
+                    break;
+                }
+            }
+            else
+            {
+                buffer[j++] = fmt[i];
+            }
+        }
+        else
+        {
+            buffer[j++] = fmt[i];
+        }
+    }
+    buffer[j++] = 0;
+    return sys_call(SYS_WRITE_ID, fd, buffer, 1, 0);
+}
+
+uint64_t fdprintf(FileDescriptor fd, const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    uint64_t toRet = fdprintfargs(fd, fmt, args);
+    va_end(args);
+    return toRet;
+}
+
+uint64_t printf(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    uint64_t toRet = fdprintfargs(STDOUT, fmt, args);
+    va_end(args);
+    return toRet;
+}
 //static
 void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff){
     uint32_t i = start;
@@ -189,6 +300,19 @@ void zeroDivTest(){
     ex_zero_division_exception();
 }
 
+void getRegisters() {
+    sys_call(SYS_GET_REGS_ID, 0, 0, 0, 0);
+}
 void clearScreen() {
-    sys_call(SYS_CLEAR, 0, 0, 0, 0);
+    sys_call(SYS_CLEAR_ID, 0, 0, 0, 0);
+}
+
+void sleep(uint64_t ticks) {
+    sys_call(SYS_SLEEP_ID, ticks, 0, 0, 0);
+}
+
+void getTime() {
+    rtc_time_t time = {0};
+    sys_call(SYS_TIME_ID, &time, 0, 0, 0);
+    printf("Time: %d:%d:%d   Date: %d/%d/%d\n", time.hours, time.minutes, time.seconds, time.day, time.month, time.year);
 }

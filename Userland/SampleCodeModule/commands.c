@@ -16,7 +16,7 @@ void helpCommand(){
 	showCommands();
 }
 void timeCommand(){
-	puts("Comando no implementado\n");
+	getTime();
 }
 void clearCommand(){
 	clearScreen();
@@ -25,7 +25,7 @@ void golfCommand(){
 	puts("Comando no implementado\n");
 }
 void infoRegCommand(){
-	puts("Comando no implementado\n");
+	getRegisters();
 }
 void zeroDivisionCommand(){
 	zeroDivTest();

@@ -4,32 +4,7 @@
 
 #define CANT_INSTRUCTIONS 10
 char instructions[CANT_INSTRUCTIONS][50];
-//echo y clear son extras
 
-/* typedef enum
-{
-    HELP = 0,
-    REGISTERS,
-    TIME,
-    PONGIS_GOLF,
-    CHANGE_FONT_SIZE,
-    TEST_ZERO_DIVISION,
-    TEST_INVALID_OPCODE,
-    ECHO,
-    CLEAR,
-} INSTRUCTION;
-
-void complete_instructions() {
-    strcpy(instructions[HELP], "help");
-    strcpy(instructions[REGISTERS], "inforeg");
-    strcpy(instructions[TIME], "time");
-    strcpy(instructions[PONGIS_GOLF], "pongis_golf");
-    strcpy(instructions[CHANGE_FONT_SIZE], "font_size");
-    strcpy(instructions[TEST_ZERO_DIVISION], "zero_div");
-    strcpy(instructions[TEST_INVALID_OPCODE], "inv_opcode");
-    strcpy(instructions[ECHO], "echo");
-    strcpy(instructions[CLEAR], "clear");
-} */
 char line[MAX_BUFFER+1] = {0}; //asi me aseguro que al menos va haber un cero
 char parameter[MAX_BUFFER+1] = {0};
 char command[MAX_BUFFER+1] = {0};
@@ -44,7 +19,6 @@ void startShell(){
     puts("----------------- Shell ---------------\n");
     puts("Available commands:\n");
     showCommands();
-
     puts("\n$ User > ");
     readInput();
 

@@ -1,6 +1,7 @@
-#include "exceptions.h"
+#include <exceptions.h>
 #include <stdint.h>
 #include <videoDriver.h>
+#include <syscall_handler.h>
 
 const char * registers[18] = {
     "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15", "RIP", "RFLAGS"
@@ -22,16 +23,7 @@ void exceptionDispatcher(int exception, const uint64_t regs[17]) {
     buffer[18] = '\0';
 
 	// Imprimo los registros
-	for (int i = 0; i < 18; i++) {
-        putString(registers[i], 0xFFFFFF, 0x000000); //
-        putString(" - ", 0xFFFFFF, 0x000000); 
-        convertToHex(regs[i], buffer + 2);
-        putString(buffer, 0xFFFFFF, 0x000000);
-        if (i % 4 == 3)
-            newline(0x000000);
-        else
-            putString(" || ", 0xFFFFFF, 0x000000); 
-    }
+	printRegisters(regs);
 
 	reset();
 }
@@ -46,15 +38,3 @@ static void invalid_opcode_exception() {
 	putString("Invalid opcode exception occurred.\n", 0xFFFFFF, 0x000000);
 }
 
-static void convertToHex(uint64_t number, char buffer[16]) {
-    int index = 15;
-    do {
-        int remainder = number % 16;
-        if (remainder < 10)
-            buffer[index] = remainder + '0';
-        else
-            buffer[index] = remainder + 'A' - 10;
-        number /= 16;
-        index--;
-    } while (index != -1);
-}

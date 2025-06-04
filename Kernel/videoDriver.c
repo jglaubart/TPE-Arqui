@@ -187,6 +187,8 @@ void clearScreen(uint32_t bg_color){
 			putPixel(bg_color, j, i);
 		}
 	}
+	resetCursor_x();
+	resetCursor_y();
 }
 
 void scrollUp(uint32_t bg_color){

@@ -61,6 +61,7 @@
     "syscall_handler.h": "c",
     "exceptions.h": "c",
     "lib.h": "c",
-    "videodriver.h": "c"
+    "videodriver.h": "c",
+    "stdint.h": "c"
   }
 }

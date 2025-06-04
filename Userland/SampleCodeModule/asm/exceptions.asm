@@ -4,7 +4,7 @@ GLOBAL ex_zero_division_exception
 section .text
 
 ex_invalid_opcode_exception:
-	mov cr6, rax
+	ud2
 	ret
 
 ex_zero_division_exception:

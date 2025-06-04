@@ -90,6 +90,7 @@ static const char HID_keymap[HID_KEYMAP_SIZE][3] = {
 #define PS2_ALTGR_MAKE 0x38
 #define PS2_CAPSLOCK_MAKE 0x3A
 #define PS2_ESC_MAKE 0x01
+#define PS2_CTRL_MAKE 0x1D
 
 // scan-code → { unshifted, shifted, AltGr }
 // only “make” codes; when you read a break code (0x80+make) mask it off:
@@ -182,7 +183,7 @@ void writeInBuffer(){
                 capsLock = !capsLock;
             }
             break;
-        case PS2_ESC_MAKE:
+        case PS2_CTRL_MAKE:
             if(pressed){
                 saveRegisters();
             }

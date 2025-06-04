@@ -1,4 +1,5 @@
 #include <registers.h>
+#include <stdint.h>
 
 #define REGISTERS 18
 

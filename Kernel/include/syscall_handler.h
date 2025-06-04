@@ -13,7 +13,10 @@ enum{
     SYS_READ_ID = 0,
     SYS_WRITE_ID = 1,
     SYS_CLEAR_ID = 2,
-    SYS_CHANGE_FONT_SIZE_ID = 10
+    SYS_TIME_ID = 3,
+    SYS_SLEEP_ID = 4,
+    SYS_CHANGE_FONT_SIZE_ID = 10,
+    SYS_GET_REGS_ID = 11
 };
 
 
@@ -22,5 +25,11 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
 uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count);
 uint64_t sys_read(uint64_t fd, char *buf, uint64_t count);
 uint64_t sys_clear();
+uint64_t sys_get_regs();
+uint64_t sys_get_time();
+uint64_t sys_sleep(uint64_t ticksToWait);
+uint64_t changeFontSize(uint64_t newSize);
 
+
+void printRegisters(uint64_t *regs); 
 #endif
