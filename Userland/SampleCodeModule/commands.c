@@ -5,8 +5,8 @@
 void showCommands(){
 	puts("\n Comandos disponibles:");
 	puts("\nclear              Resetea la shell a su estado original");
-	puts("\ngolf         	   Inicia el juego de Pongis Golf");
-	puts("\ninforeg            Imprime los valores de los registros (CTRL + R es necesario previamente)");
+	puts("\ngolf         	  Inicia el juego de Pongis Golf");
+	puts("\ninforeg            Imprime los valores de los registros (CTRL es necesario previamente)");
 	puts("\ntime               Imprime la hora del sistema en pantalla");
 	puts("\ninvopcode          Prueba la excepcion de codigo de operacion invalido");
 	puts("\nzerodiv            Prueba de excepcion de division por cero\n");

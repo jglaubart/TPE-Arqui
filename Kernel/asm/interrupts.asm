@@ -113,8 +113,8 @@ SECTION .text
 	mov rdi, [rsp + 8]
 	mov [ripBackup], rdi
 	pop rdi
+	
 	saveRegistersMacro regsExcArr
-
 	pushState
 
 	mov rdi, %1 ; pasaje de parametro

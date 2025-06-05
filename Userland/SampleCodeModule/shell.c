@@ -17,11 +17,9 @@ static int checkLine();
 
 void startShell(){
     puts("----------------- Shell ---------------\n");
-    puts("Available commands:\n");
     showCommands();
     puts("\n$ User > ");
     readInput();
-
 }
 
 static void readInput(){ 

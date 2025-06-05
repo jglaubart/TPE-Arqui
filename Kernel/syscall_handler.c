@@ -77,12 +77,13 @@ uint64_t sys_clear(){
 }
 
 uint64_t sys_get_regs(){
-    uint64_t *regs = getRegs();
- /*    for (int i = 0; i < REGISTERS; i++)
-        arr[i] = regs[i]; */
     uint64_t backupDone = isBackupDone();
     if (backupDone) {
+        uint64_t *regs = getRegs();
         printRegisters(regs);
+    } else{
+        putString("Error: No backup done. Press CTRL to take registers snapshot.", 0xFFFFFF, 0x000000);
+        newline(0x000000);
     }
     return backupDone;
     
@@ -108,10 +109,10 @@ void printRegisters(uint64_t *regs) {
     };
 
     // Buffer para convertir a hexadecimal
-char buffer[19];
-    buffer[0] = '0';
-    buffer[1] = 'x';
-    buffer[18] = '\0';
+    char buffer[19];
+        buffer[0] = '0';
+        buffer[1] = 'x';
+        buffer[18] = '\0';
 
 	// Imprimo los registros
 	for (int i = 0; i < 18; i++) {

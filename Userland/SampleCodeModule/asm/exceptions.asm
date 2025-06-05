@@ -8,6 +8,7 @@ ex_invalid_opcode_exception:
 	ret
 
 ex_zero_division_exception:
+	xor rdx, rdx
 	mov rax, 0
 	div rax
 	ret

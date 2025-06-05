@@ -78,7 +78,6 @@ getKeyPressed:
 
 saveRegisters:
 	saveRegistersMacro regsArr
-	
 	ret
 
 outb:

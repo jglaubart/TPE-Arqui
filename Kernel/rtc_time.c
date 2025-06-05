@@ -70,7 +70,7 @@ void get_time(rtc_time_t* time)
 	time->seconds = 0xFF;
 	time->seconds = bcd_decimal(data[0]);
 	time->minutes = bcd_decimal(data[1]);
-	time->hours = bcd_decimal(data[2]) + GMT_OFFSET;
+	time->hours = (bcd_decimal(data[2]) + GMT_OFFSET + 24) % 24;
 	if (time->hours < 0)
 		time->hours += 24;
 	time->day = bcd_decimal(data[3] - ((time->hours > 21) ? 1 : 0));

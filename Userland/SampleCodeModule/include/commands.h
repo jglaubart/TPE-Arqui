@@ -13,9 +13,9 @@ void clearCommand();
 void golfCommand();
 void infoRegCommand();
 void zeroDivisionCommand();
-void invalidOpCodeCommand();
+void invalidOpCodeCommand();  
 
-static void (*commands_ptr[MAX_COMMANDS])() = {helpCommand, timeCommand, clearCommand, golfCommand, infoRegCommand, zeroDivisionCommand,invalidOpCodeCommand};
+static void (*commands_ptr[MAX_COMMANDS])() = {helpCommand, timeCommand, clearCommand, golfCommand, infoRegCommand, zeroDivisionCommand, invalidOpCodeCommand};
 
 
 #endif

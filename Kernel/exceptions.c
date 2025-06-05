@@ -11,8 +11,9 @@ static void invalid_opcode_exception();
 static void convertToHex(uint64_t number, char buffer[16]);
 
 void exceptionDispatcher(int exception, const uint64_t regs[17]) {
-	if (exception == ZERO_EXCEPTION_ID)
+	if (exception == ZERO_EXCEPTION_ID){
 		zero_division();
+	}
 	else if(exception == INVALID_OPCODE_EXCEPTION_ID){
 		invalid_opcode_exception();
 	}

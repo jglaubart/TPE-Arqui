@@ -18,6 +18,7 @@ void _irq04Handler(void);
 void _irq05Handler(void);
 
 void _exception00Handler(void);
+void _exception06Handler(void);   //agregado para invopcode
 
 void _sys_int_handler(void);
 
