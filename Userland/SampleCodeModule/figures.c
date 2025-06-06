@@ -148,3 +148,13 @@ static int64_t yFracToScreen(double yFrac) {
     int64_t screenHeight = getScreenHeight();
     return (int64_t)(yFrac * screenHeight);
 }
+
+void setRotationCenter(Figure *f, vec2d center) {
+    if (!f) return;
+    f->rotationCenter = center;
+}
+
+FigureType getFigureType(Figure *f) {
+    if (!f) return -1; // Invalid type
+    return f->type;
+}

@@ -36,5 +36,6 @@ void moveFigure(Figure *f, vec2d delta);
 void rotateFigure(Figure *f, double deltaAngle);
 FigureType getFigureType(Figure *f);
 void moveVec2d(vec2d *v, vec2d delta);
+void setRotationCenter(Figure *f, vec2d center);
 
 #endif
