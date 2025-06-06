@@ -19,8 +19,6 @@ void startShell(){
     puts("----------------- Shell ---------------\n");
     showCommands();
     puts("\n$ User > ");
-	printf("the screen width is %d\n", getScreenWidth());
-	printf("the screen height is %d\n", getScreenHeight());
     readInput();
 }
 

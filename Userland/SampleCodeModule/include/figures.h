@@ -7,8 +7,8 @@
 typedef enum { CIRCLE, RECTANGLE } FigureType;
 
 typedef struct{
-    float x;  // x coordinate (fractions of screen)
-    float y;  // y coordinate (fractions of screen)
+    double x;  // x coordinate (fractions of screen)
+    double y;  // y coordinate (fractions of screen)
 } vec2d;
 
 // Tipo abstracto de datos Figure
@@ -26,10 +26,10 @@ typedef struct Figure {
 } Figure;
 
 // Constructor de círculo
-void newCircle(Figure *c, vec2d topLeft, vec2d bottomRight, double angle, uint32_t color);
+void newCircle(Figure *c, vec2d topLeft, vec2d bottomRight, uint32_t color);
 
 // Constructor de rectángulo
-void newRectangle(Figure *r, vec2d topLeft, vec2d bottomRight, double angle, uint32_t color);
+void newRectangle(Figure *r, vec2d topLeft, vec2d bottomRight, uint32_t color);
 
 void drawFigure(Figure *f);
 void moveFigure(Figure *f, vec2d delta);

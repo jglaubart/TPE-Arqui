@@ -1,6 +1,7 @@
 #include <shell.h>
 #include <commands.h>
 #include <usr_stdlib.h>
+#include "pongis.h"
 // IMPLEMENTAION DE LOS COMANDOS
 void showCommands(){
 	puts("\n Comandos disponibles:");
@@ -22,7 +23,7 @@ void clearCommand(){
 	clearScreen();
 }
 void golfCommand(){
-	puts("Comando no implementado\n");
+	pongisInit();
 }
 void infoRegCommand(){
 	getRegisters();

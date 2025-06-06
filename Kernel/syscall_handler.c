@@ -38,7 +38,7 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
             result = sys_get_screen_height();
             break;
         case(SYS_DRAW_CIRCLE_ID):
-            result = 0;
+            result = sys_draw_circle((int64_t (*)[2])rdi, rsi);
             break;
         case(SYS_DRAW_RECTANGLE_ID):
             result = sys_draw_rectangle((int64_t (*)[2])rdi, rsi);
@@ -158,6 +158,16 @@ uint64_t sys_get_screen_width() {
 }
 uint64_t sys_get_screen_height() {
     return getScreenHeight();
+}
+
+uint64_t sys_draw_circle(int64_t (*corners)[2], uint32_t color) {
+    Point points[2];
+    for (int i = 0; i < 2; i++) {
+        points[i].x = corners[i][0];
+        points[i].y = corners[i][1];
+    }
+    drawCircle(points, color);
+    return 0;
 }
 
 uint64_t sys_draw_rectangle(int64_t (*corners)[2], uint32_t color) {

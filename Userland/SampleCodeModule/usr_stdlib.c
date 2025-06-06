@@ -6,6 +6,8 @@
 #define MAX_CHARS 1000
 #define MAX_NUMBER_LENGTH 100
 
+static uint64_t fdprintfargs(FileDescriptor fd, const char *fmt, va_list args);
+
 uint64_t puts(const char *string) {
     uint64_t count = strlen(string);
     return sys_call(SYS_WRITE_ID, STDOUT, string, count, 0);
@@ -158,7 +160,7 @@ uint64_t fdprintf(FileDescriptor fd, const char *fmt, ...)
     return toRet;
 }
 
-uint64_t printf(const char *fmt, ...)
+uint64_t myprintf(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -314,7 +316,7 @@ void sleep(uint64_t ticks) {
 void getTime() {
     rtc_time_t time = {0};
     sys_call(SYS_TIME_ID, &time, 0, 0, 0);
-    printf("Time: %d:%d:%d   Date: %d/%d/%d\n", time.hours, time.minutes, time.seconds, time.day, time.month, time.year);
+    myprintf("Time: %d:%d:%d   Date: %d/%d/%d\n", time.hours, time.minutes, time.seconds, time.day, time.month, time.year);
 }
 
 uint64_t getScreenWidth() {

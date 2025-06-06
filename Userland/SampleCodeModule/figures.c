@@ -9,8 +9,8 @@ static void drawRectangle(Figure *self);
 static void rotateCircle(Figure *f, double deltaAngle);
 static void rotateRectangle(Figure *f, double deltaAngle);
 
-static uint64_t xFracToScreen(float xFrac);
-static uint64_t yFracToScreen(float yFrac);
+static int64_t xFracToScreen(double xFrac);
+static int64_t yFracToScreen(double yFrac);
 
 void moveVec2d(vec2d *v, vec2d delta) {
     if (!v) return;
@@ -24,6 +24,8 @@ void moveFigure(Figure *f, vec2d delta) {
 
     moveVec2d(&f->topLeft, delta);
     moveVec2d(&f->bottomRight, delta);
+    moveVec2d(&f->topRight, delta);
+    moveVec2d(&f->bottomLeft, delta);
     moveVec2d(&f->rotationCenter, delta);
 }
 
@@ -68,14 +70,16 @@ void rotateRectangle(Figure *f, double deltaAngle) {
     f->bottomLeft = corners[3];
 }
 
-void newCircle(Figure *c, vec2d topLeft, vec2d bottomRight, double angle, uint32_t color){
+void newCircle(Figure *c, vec2d topLeft, vec2d bottomRight, uint32_t color){
     if (!c) return;
 
     c->topLeft = topLeft;
     c->bottomRight = bottomRight;
+    c->topRight = (vec2d){bottomRight.x, topLeft.y};
+    c->bottomLeft = (vec2d){topLeft.x, bottomRight.y};
     c->rotationCenter.x = (topLeft.x + bottomRight.x) / 2;
     c->rotationCenter.y = (topLeft.y + bottomRight.y) / 2;
-    c->angle = angle;
+    c->angle = 0;
     c->color = color;
     c->type = CIRCLE;
 
@@ -85,14 +89,16 @@ void newCircle(Figure *c, vec2d topLeft, vec2d bottomRight, double angle, uint32
 }
 
 
-void newRectangle(Figure *r, vec2d topLeft, vec2d bottomRight, double angle, uint32_t color) {
+void newRectangle(Figure *r, vec2d topLeft, vec2d bottomRight, uint32_t color) {
     if (!r) return;
 
     r->topLeft       = topLeft;
     r->bottomRight   = bottomRight;
+    r->topRight      = (vec2d){bottomRight.x, topLeft.y};
+    r->bottomLeft    = (vec2d){topLeft.x, bottomRight.y};
     r->rotationCenter.x = (topLeft.x + bottomRight.x) / 2;
     r->rotationCenter.y = (topLeft.y + bottomRight.y) / 2;
-    r->angle         = angle;
+    r->angle         = 0;
     r->color         = color;
     r->type          = RECTANGLE;
 
@@ -134,11 +140,11 @@ void rotateFigure(Figure *f, double angle) {
     f->rotate(f, angle);
 }
 
-static uint64_t xFracToScreen(float xFrac) {
+static int64_t xFracToScreen(double xFrac) {
     int64_t screenWidth = getScreenWidth();
-    return (uint64_t)(xFrac * screenWidth);
+    return (int64_t)(xFrac * screenWidth);
 }
-static uint64_t yFracToScreen(float yFrac) {
+static int64_t yFracToScreen(double yFrac) {
     int64_t screenHeight = getScreenHeight();
-    return (uint64_t)(yFrac * screenHeight);
+    return (int64_t)(yFrac * screenHeight);
 }

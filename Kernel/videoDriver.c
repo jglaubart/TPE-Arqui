@@ -243,6 +243,10 @@ uint64_t getScreenHeight() {
 	return VBE_mode_info->height;
 }
 
+//   Given an edge from p0 → p1, determines whether the horizontal scanline at
+//   y = scanY intersects the edge (including the top endpoint, excluding the bottom).
+//   If so, writes the intersection x into *outX and returns 1; otherwise returns 0.
+//   All arithmetic uses signed intermediates to handle subtraction correctly.
 int edgeIntersectsScanline(const Point *p0, const Point *p1, uint64_t scanY, int64_t *outX) {
     // Cast to signed for comparisons and arithmetic
     int64_t y0 = (int64_t)p0->y;
@@ -284,12 +288,90 @@ int edgeIntersectsScanline(const Point *p0, const Point *p1, uint64_t scanY, int
     return 1;
 }
 
-// -----------------------------------------------------------------------------
-// drawRectangle:
+//   Draws a filled circle of fixed radius, determined by the two opposing corners
+//   corners[0] and corners[1], even if parts lie off-screen. Any pixel outside
+//   the framebuffer is simply skipped, but the circle’s size and center remain
+//   based solely on the original bounding box.
+//
+//   corners: array of two Points { x, y } defining opposite corners of the circle’s
+//            axis-aligned bounding box.
+//   color:   0x00RRGGBB color to fill the circle.
+void drawCircle(const Point corners[2], uint32_t color) {
+    // 1) Compute raw bounding box (no clamping yet)
+    int64_t x0 = (int64_t)corners[0].x;
+    int64_t y0 = (int64_t)corners[0].y;
+    int64_t x1 = (int64_t)corners[1].x;
+    int64_t y1 = (int64_t)corners[1].y;
+
+    int64_t minX = (x0 < x1 ? x0 : x1);
+    int64_t maxX = (x0 > x1 ? x0 : x1);
+    int64_t minY = (y0 < y1 ? y0 : y1);
+    int64_t maxY = (y0 > y1 ? y0 : y1);
+
+    // 2) Compute circle center and radius from raw box
+    int64_t boxW = maxX - minX;
+    int64_t boxH = maxY - minY;
+    if (boxW < 0) boxW = -boxW;
+    if (boxH < 0) boxH = -boxH;
+    int64_t centerX = minX + boxW / 2;
+    int64_t centerY = minY + boxH / 2;
+    int64_t r = (boxW < boxH ? boxW : boxH) / 2;
+    if (r <= 0) {
+        // Radius zero or negative -> draw nothing
+        return;
+    }
+    int64_t r2 = r * r;
+
+    // 3) Obtain screen dimensions
+    uint64_t screenW = VBE_mode_info->width;
+    uint64_t screenH = VBE_mode_info->height;
+
+    // 4) Iterate y from (centerY - r) to (centerY + r), skipping off-screen scanlines
+    int64_t y_start = centerY - r;
+    int64_t y_end   = centerY + r;
+
+    for (int64_t y = y_start; y <= y_end; y++) {
+        if (y < 0 || (uint64_t)y >= screenH) {
+            // Entire scanline is off-screen vertically; skip
+        } else {
+            int64_t dy = y - centerY;
+            int64_t dy2 = dy * dy;
+            int64_t rem = r2 - dy2;
+            if (rem < 0) {
+                // No horizontal span on this scanline
+            } else {
+                // 5) Find maxDx = floor(sqrt(rem)) without using sqrt()
+                //    Since maxDx ≤ r, loop from 0 up to r
+                int64_t maxDx = 0;
+                int64_t test = 0;
+                while (test <= r) {
+                    if (test * test > rem) {
+                        break;
+                    }
+                    maxDx = test;
+                    test++;
+                }
+
+                // 6) Horizontal span runs from (centerX - maxDx) to (centerX + maxDx)
+                int64_t x_start = centerX - maxDx;
+                int64_t x_end   = centerX + maxDx;
+
+                // 7) Draw each pixel in that span, skipping any off-screen horizontally
+                for (int64_t x = x_start; x <= x_end; x++) {
+                    if (x < 0 || (uint64_t)x >= screenW) {
+                        // Skip off-screen pixel
+                    } else {
+                        putPixel(color, (uint64_t)x, (uint64_t)y);
+                    }
+                }
+            }
+        }
+    }
+}
+
 //   Fills a convex quadrilateral defined by four Points (corners[0..3]).
 //   Uses scanline polygon fill and clamps all pixels to screen bounds.
 //   This version does not use `continue` or `break` inside loops.
-// -----------------------------------------------------------------------------
 void drawRectangle(const Point corners[4], uint32_t color){
     // 1) Find minY and maxY among the four corners (uint64_t)
     uint64_t minY = corners[0].y;

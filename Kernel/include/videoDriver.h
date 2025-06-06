@@ -13,8 +13,8 @@
 #define DEFAULT_LINES 25
 
 typedef struct {
-	uint64_t x;
-	uint64_t y;
+	int64_t x;
+	int64_t y;
 }Point;
 
 void initVideoDriver();
@@ -53,5 +53,7 @@ void scrollUp(uint32_t bg_color);
 uint64_t getScreenWidth();
 uint64_t getScreenHeight();
 
+int edgeIntersectsScanline(const Point *p0, const Point *p1, uint64_t scanY, int64_t *outX);
+void drawCircle(const Point corners[2], uint32_t color);
 void drawRectangle(const Point corners[4], uint32_t color);
 #endif

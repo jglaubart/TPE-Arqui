@@ -21,8 +21,12 @@ uint64_t strlen(const char *string);
 uint64_t strcmp(const char *s1, const char *s2);
 char *strcpy(char *dest, const char *src);
 
+uint64_t myprintf(const char *fmt, ...);
+uint64_t fdprintf(FileDescriptor fd, const char *fmt, ...);
+
 void unsigned_num_to_str(uint32_t num, uint32_t start, char *buff);
 void signed_num_to_str(int32_t num, char *buff);
+void signed_float_to_str(double num, char *buff, uint32_t precision);
 uint32_t unsigned_str_to_num(uint64_t *it, uint64_t buff_length, char *buff);
 void unsigned_num_to_hex_str(uint32_t num, char *buff);
 int32_t signed_str_to_num(uint64_t *it, uint64_t buff_length, char *buff);

@@ -35,7 +35,8 @@ uint64_t sys_sleep(uint64_t ticksToWait);
 uint64_t changeFontSize(uint64_t newSize);
 uint64_t sys_get_screen_width();
 uint64_t sys_get_screen_height();
-
+uint64_t sys_draw_circle(int64_t (*corners)[2], uint32_t color);
+uint64_t sys_draw_rectangle(int64_t (*corners)[2], uint32_t color);
 
 void printRegisters(uint64_t *regs); 
 #endif
