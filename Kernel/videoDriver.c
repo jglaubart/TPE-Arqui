@@ -234,3 +234,147 @@ moveCursorEndPrevLine(){
 	cursorPos.x = (VBE_mode_info->width - X_MARGIN) - (VBE_mode_info->width - X_MARGIN * 2) % (desc->width * font_size);
 	cursorPos.y -= desc->height * font_size;
 }
+
+uint64_t getScreenWidth() {
+	return VBE_mode_info->width;
+}
+
+uint64_t getScreenHeight() {
+	return VBE_mode_info->height;
+}
+
+int edgeIntersectsScanline(const Point *p0, const Point *p1, uint64_t scanY, int64_t *outX) {
+    // Cast to signed for comparisons and arithmetic
+    int64_t y0 = (int64_t)p0->y;
+    int64_t y1 = (int64_t)p1->y;
+    int64_t sy = (int64_t)scanY;
+
+    // If edge is horizontal, there is no vertical span => no intersection
+    if (y0 == y1) {
+        return 0;
+    }
+
+    // Determine if scanY ∈ [min(y0,y1), max(y0,y1)) (top inclusive, bottom exclusive)
+    int intersects = 0;
+    if (y0 < y1) {
+        if (sy >= y0 && sy < y1) {
+            intersects = 1;
+        }
+    } else { // y1 < y0
+        if (sy >= y1 && sy < y0) {
+            intersects = 1;
+        }
+    }
+
+    if (!intersects) {
+        return 0;
+    }
+
+    // Compute intersection:
+    //   x = p0.x + (scanY - p0.y) * (p1.x - p0.x) / (p1.y - p0.y)
+    int64_t x0 = (int64_t)p0->x;
+    int64_t x1 = (int64_t)p1->x;
+    int64_t dx = x1 - x0;
+    int64_t dy = y1 - y0;
+    int64_t dy_scan = sy - y0;
+
+    // Integer division; truncates toward zero.
+    int64_t xi = x0 + (dx * dy_scan) / dy;
+    *outX = xi;
+    return 1;
+}
+
+// -----------------------------------------------------------------------------
+// drawRectangle:
+//   Fills a convex quadrilateral defined by four Points (corners[0..3]).
+//   Uses scanline polygon fill and clamps all pixels to screen bounds.
+//   This version does not use `continue` or `break` inside loops.
+// -----------------------------------------------------------------------------
+void drawRectangle(const Point corners[4], uint32_t color){
+    // 1) Find minY and maxY among the four corners (uint64_t)
+    uint64_t minY = corners[0].y;
+    uint64_t maxY = corners[0].y;
+    for (int i = 1; i < 4; i++) {
+        uint64_t yv = corners[i].y;
+        if (yv < minY) {
+            minY = yv;
+        }
+        if (yv > maxY) {
+            maxY = yv;
+        }
+    }
+
+    // 2) Clamp to vertical screen bounds
+    uint64_t screenH = VBE_mode_info->height;
+    if (minY >= screenH) {
+        // Entire polygon is below the screen; nothing to draw
+        return;
+    }
+    if (maxY >= screenH) {
+        maxY = screenH - 1;
+    }
+
+    // 3) For each scanline y in [minY..maxY]:
+    for (uint64_t y = minY; y <= maxY; y++) {
+        int64_t xIntersects[4];
+        int count = 0;
+
+        // 3a) Compute intersections with each edge (corner[e] to corner[(e+1)%4])
+        //     We avoid `continue` by checking the return value of edgeIntersectsScanline
+        for (int e = 0; e < 4; e++) {
+            const Point *p0 = &corners[e];
+            const Point *p1 = &corners[(e + 1) % 4];
+            int64_t xi;
+            int intersected = edgeIntersectsScanline(p0, p1, y, &xi);
+            if (intersected && count < 4) {
+                xIntersects[count] = xi;
+                count++;
+            }
+        }
+
+        // 3b) Only proceed if we have at least two intersections
+        if (count < 2) {
+            // Fewer than 2 intersections -> no fill on this scanline
+        } else {
+            // 3c) Sort the intersection Xs (simple bubble sort for up to 4 items)
+            for (int i = 0; i < count - 1; i++) {
+                for (int j = i + 1; j < count; j++) {
+                    if (xIntersects[j] < xIntersects[i]) {
+                        int64_t tmp = xIntersects[i];
+                        xIntersects[i] = xIntersects[j];
+                        xIntersects[j] = tmp;
+                    }
+                }
+            }
+
+            // 3d) Fill between pairs: (xs[0]..xs[1]), then (xs[2]..xs[3]) if present
+            uint64_t screenW = VBE_mode_info->width;
+            for (int i = 0; i + 1 < count; i += 2) {
+                int64_t startX = xIntersects[i];
+                int64_t endX   = xIntersects[i + 1];
+
+                // If the entire span is to the left of screen, skip via if:
+                if (endX < 0) {
+                    // skip this span
+                } else {
+                    // Clamp horizontal range to [0..screenW-1]
+                    int64_t sx = startX;
+                    int64_t ex = endX;
+                    if (sx < 0) {
+                        sx = 0;
+                    }
+                    if ((uint64_t)ex >= screenW) {
+                        ex = screenW - 1;
+                    }
+                    // If, after clamping, sx <= ex, draw pixels
+                    if (sx <= ex) {
+                        for (int64_t x = sx; x <= ex; x++) {
+                            // At this point x and y are within bounds; no need for extra check
+                            putPixel(color, (uint64_t)x, y);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

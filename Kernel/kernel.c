@@ -5,6 +5,7 @@
 #include <naiveConsole.h>
 #include "videoDriver.h"
 #include "syscall_handler.h"
+#include "idtLoader.h"
 
 extern uint8_t text;
 extern uint8_t rodata;

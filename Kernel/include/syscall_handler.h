@@ -16,7 +16,11 @@ enum{
     SYS_TIME_ID = 3,
     SYS_SLEEP_ID = 4,
     SYS_CHANGE_FONT_SIZE_ID = 10,
-    SYS_GET_REGS_ID = 11
+    SYS_GET_REGS_ID = 11,
+    SYS_GET_SCREEN_WIDTH_ID = 12,
+    SYS_GET_SCREEN_HEIGHT_ID = 13,
+    SYS_DRAW_CIRCLE_ID = 14,
+    SYS_DRAW_RECTANGLE_ID = 15
 };
 
 
@@ -29,6 +33,8 @@ uint64_t sys_get_regs();
 uint64_t sys_get_time();
 uint64_t sys_sleep(uint64_t ticksToWait);
 uint64_t changeFontSize(uint64_t newSize);
+uint64_t sys_get_screen_width();
+uint64_t sys_get_screen_height();
 
 
 void printRegisters(uint64_t *regs); 

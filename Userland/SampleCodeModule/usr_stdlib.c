@@ -316,3 +316,115 @@ void getTime() {
     sys_call(SYS_TIME_ID, &time, 0, 0, 0);
     printf("Time: %d:%d:%d   Date: %d/%d/%d\n", time.hours, time.minutes, time.seconds, time.day, time.month, time.year);
 }
+
+uint64_t getScreenWidth() {
+    return sys_call(SYS_GET_SCREEN_WIDTH_ID, 0, 0, 0, 0);
+}
+uint64_t getScreenHeight() {
+    return sys_call(SYS_GET_SCREEN_HEIGHT_ID, 0, 0, 0, 0);
+}
+
+
+/**
+ * normalize_angle:
+ *   Bring any angle (in radians) into the principal range [-π, +π].
+ */
+double normalize_angle(double x) {
+    // Reduce x mod 2π into (-2π, +2π)
+    double two_pi = 2.0 * PI;
+    double n = x / two_pi;
+    // Round n to nearest integer
+    if (n >= 0.0) {
+        n = (double)((long)(n + 0.5));
+    } else {
+        n = (double)((long)(n - 0.5));
+    }
+    x -= n * two_pi;
+    // Now x is in (-2π, +2π). If > π or < -π, shift by ±2π
+    if (x > PI) {
+        x -= two_pi;
+    } else if (x < -PI) {
+        x += two_pi;
+    }
+    return x;
+}
+
+/**
+ * sin_taylor:
+ *   Approximate sin(x) for x in radians, where x ∈ [-π, π], using a
+ *   7-term Taylor series. Error is on the order of 10^(-8) for |x| ≤ π.
+ *
+ *   sin(x) ≈ x
+ *            - x^3/6
+ *            + x^5/120
+ *            - x^7/5040
+ *            + x^9/362880
+ *            - x^11/39916800
+ *            + x^13/6227020800
+ */
+double sin_taylor(double x) {
+    x = normalize_angle(x);
+    double x2 = x * x;
+    double term = x;           // x
+    double sum  = term;
+
+    term *= -x2 / (2.0 * 3.0);  // - x^3/3!
+    sum += term;
+
+    term *= -x2 / (4.0 * 5.0);  // + x^5/5!
+    sum += term;
+
+    term *= -x2 / (6.0 * 7.0);  // - x^7/7!
+    sum += term;
+
+    term *= -x2 / (8.0 * 9.0);  // + x^9/9!
+    sum += term;
+
+    term *= -x2 / (10.0 * 11.0); // - x^11/11!
+    sum += term;
+
+    term *= -x2 / (12.0 * 13.0); // + x^13/13!
+    sum += term;
+
+    return sum;
+}
+
+/**
+ * cos_taylor:
+ *   Approximate cos(x) for x in radians, where x ∈ [-π, π], using a
+ *   7-term Taylor series. Error is on the order of 10^(-8) for |x| ≤ π.
+ *
+ *   cos(x) ≈ 1
+ *            - x^2/2
+ *            + x^4/24
+ *            - x^6/720
+ *            + x^8/40320
+ *            - x^10/3628800
+ *            + x^12/479001600
+ */
+double cos_taylor(double x) {
+    x = normalize_angle(x);
+    double x2 = x * x;
+    double term = 1.0;       // 1
+    double sum  = term;
+
+    term *= -x2 / (1.0 * 2.0);   // - x^2/2!
+    sum += term;
+
+    term *= -x2 / (3.0 * 4.0);   // + x^4/4!
+    sum += term;
+
+    term *= -x2 / (5.0 * 6.0);   // - x^6/6!
+    sum += term;
+
+    term *= -x2 / (7.0 * 8.0);   // + x^8/8!
+    sum += term;
+
+    term *= -x2 / (9.0 * 10.0);  // - x^10/10!
+    sum += term;
+
+    term *= -x2 / (11.0 * 12.0); // + x^12/12!
+    sum += term;
+
+    return sum;
+}

@@ -1,8 +1,7 @@
-#ifndef SHELL_H
-#define SHELL_H
+#ifndef _SHELL_H
+#define _SHELL_H
 
 #define MAX_BUFFER 254
-
 
 void startShell();
 void complete_instructions();

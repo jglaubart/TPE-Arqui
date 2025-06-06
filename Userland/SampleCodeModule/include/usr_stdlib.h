@@ -2,6 +2,9 @@
 #define _USRLIB_H_
 
 #include <stdint.h>
+
+#define PI 3.14159265358979323846
+
 typedef enum
 {
     STDIN = 0,
@@ -35,4 +38,10 @@ void zeroDivTest();
 void getRegisters(); 
 void sleep(uint64_t ticks);
 void getTime();
+uint64_t getScreenWidth();
+uint64_t getScreenHeight();
+
+double normalize_angle(double x);
+double sin_taylor(double x);
+double cos_taylor(double x);
 #endif

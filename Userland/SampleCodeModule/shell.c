@@ -5,7 +5,7 @@
 #define CANT_INSTRUCTIONS 10
 char instructions[CANT_INSTRUCTIONS][50];
 
-char line[MAX_BUFFER+1] = {0}; //asi me aseguro que al menos va haber un cero
+char line[MAX_BUFFER+1] = {0};
 char parameter[MAX_BUFFER+1] = {0};
 char command[MAX_BUFFER+1] = {0};
 int linePos = 0;
@@ -19,6 +19,8 @@ void startShell(){
     puts("----------------- Shell ---------------\n");
     showCommands();
     puts("\n$ User > ");
+	printf("the screen width is %d\n", getScreenWidth());
+	printf("the screen height is %d\n", getScreenHeight());
     readInput();
 }
 

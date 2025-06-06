@@ -11,7 +11,11 @@ enum{
     SYS_TIME_ID = 3,
     SYS_SLEEP_ID = 4,
     SYS_CHANGE_FONT_SIZE = 10,
-    SYS_GET_REGS_ID = 11
+    SYS_GET_REGS_ID = 11,
+    SYS_GET_SCREEN_WIDTH_ID = 12,
+    SYS_GET_SCREEN_HEIGHT_ID = 13,
+    SYS_DRAW_CIRCLE_ID = 14,
+    SYS_DRAW_RECTANGLE_ID = 15
 };
 
 typedef struct {

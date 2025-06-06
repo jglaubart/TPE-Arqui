@@ -50,4 +50,8 @@ void clearScreen(uint32_t bg_color);
 
 void scrollUp(uint32_t bg_color);
 
+uint64_t getScreenWidth();
+uint64_t getScreenHeight();
+
+void drawRectangle(const Point corners[4], uint32_t color);
 #endif
