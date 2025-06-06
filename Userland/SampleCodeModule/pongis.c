@@ -21,8 +21,8 @@ void pongisInit(){
         clearScreen();
         for (int i = 0; i < 3; i++) {
             drawFigure(&figures[i]);
-            rotateFigure(&figures[i], 0.01); // Rotate each figure slightly
-            moveFigure(&figures[i], (vec2d){0.01, 0.01}); // Move each figure slightly
+            rotateFigure(&figures[i], 0.1); // Rotate each figure slightly
+            //moveFigure(&figures[i], (vec2d){0.01, 0.01}); // Move each figure slightly
         }
     }
 }
