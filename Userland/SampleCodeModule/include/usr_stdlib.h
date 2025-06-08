@@ -48,4 +48,6 @@ uint64_t getScreenHeight();
 double normalize_angle(double x);
 double sin_taylor(double x);
 double cos_taylor(double x);
+double my_fabs(double x);
+double my_sqrt(double x);
 #endif

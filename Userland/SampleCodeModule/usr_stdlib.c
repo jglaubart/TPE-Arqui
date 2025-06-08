@@ -5,7 +5,7 @@
 
 #define MAX_CHARS 1000
 #define MAX_NUMBER_LENGTH 100
-
+#define REGISTERS 18
 static uint64_t fdprintfargs(FileDescriptor fd, const char *fmt, va_list args);
 
 uint64_t puts(const char *string) {
@@ -302,9 +302,53 @@ void zeroDivTest(){
     ex_zero_division_exception();
 }
 
-void getRegisters() {
-    sys_call(SYS_GET_REGS_ID, 0, 0, 0, 0);
+const char *registerTitles[REGISTERS] = {
+    "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP",
+    "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15",
+    "RIP", "RFLAGS"
+};
+
+static void convertToHex(uint64_t number, char buffer[16]) {
+    int index = 15;
+    do {
+        int remainder = number % 16;
+        if (remainder < 10)
+            buffer[index] = remainder + '0';
+        else
+            buffer[index] = remainder + 'A' - 10;
+        number /= 16;
+        index--;
+    } while (index != -1);
 }
+void getRegisters() {
+    uint64_t regs[REGISTERS];
+    uint64_t retValue = sys_call(SYS_GET_REGS_ID, regs, 0, 0, 0);
+    if(retValue == 0) {
+        myprintf("Must press CTRL to backup registers.");
+    }
+    else{
+        uint64_t reg;
+         // Buffer para convertir a hexadecimal
+        char buffer[19];
+            buffer[0] = '0';
+            buffer[1] = 'x';
+            buffer[18] = '\0';
+
+        // Imprimo los registros
+        for (int i = 0; i < REGISTERS; i++) {
+            myprintf("%s - ",registerTitles[i]);
+            convertToHex(regs[i], buffer + 2);
+            myprintf(buffer);
+            if (i % 4 == 3)
+                puts("\n");
+            else
+                myprintf(" || "); 
+        }
+        puts("\n");
+    }
+
+}
+
 void clearScreen() {
     sys_call(SYS_CLEAR_ID, 0, 0, 0, 0);
 }
@@ -429,4 +473,33 @@ double cos_taylor(double x) {
     sum += term;
 
     return sum;
+}
+
+/* Absolute value for double */
+double my_fabs(double x) {
+    return x < 0 ? -x : x;
+}
+
+/* Compute square root of x using Newton–Raphson,
+   looping only while the change remains ≥ epsilon */
+double my_sqrt(double x) {
+    if (x < 0.0) {
+        /* negative input: return -1 as an error code */
+        return -1.0;
+    }
+    if (x == 0.0 || x == 1.0) {
+        return x;
+    }
+
+    double guess   = x;                             /* initial guess */
+    double epsilon = 1e-12;                         /* desired precision */
+    double next    = 0.5 * (guess + x / guess);     /* first iteration */
+
+    /* keep iterating as long as difference ≥ epsilon */
+    while (my_fabs(next - guess) >= epsilon) {
+        guess = next;
+        next  = 0.5 * (guess + x / guess);
+    }
+
+    return next;
 }

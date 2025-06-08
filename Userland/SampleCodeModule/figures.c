@@ -4,6 +4,9 @@
 #include "syscalls.h"
 #include "figures.h"
 
+static int64_t screenWidth = 0;
+static int64_t screenHeight = 0;
+
 static void drawCircle(Figure *self);
 static void drawRectangle(Figure *self);
 static void rotateCircle(Figure *f, double deltaAngle);
@@ -111,6 +114,11 @@ void newRectangle(Figure *r, vec2d topLeft, vec2d bottomRight, uint32_t color) {
 // ------------------------
 // Draw stubs (not implemented yet)
 static void drawCircle(Figure *self) {
+    //arreglo provisorio
+    if(screenHeight == 0 || screenWidth == 0){
+        screenWidth = getScreenWidth();
+        screenHeight = getScreenHeight();
+    }
     if (!self) return;
     uint64_t corners[2][2] = {
         {xFracToScreen(self->topLeft.x), yFracToScreen(self->topLeft.y)},
@@ -120,6 +128,11 @@ static void drawCircle(Figure *self) {
 }
 
 static void drawRectangle(Figure *self) {
+    //arreglo provisorio
+    if(screenHeight == 0 || screenWidth == 0){
+        screenWidth = getScreenWidth();
+        screenHeight = getScreenHeight();
+    }
     if (!self) return;
     int64_t corners[4][2] = {
         {xFracToScreen(self->topLeft.x), yFracToScreen(self->topLeft.y)},
@@ -141,11 +154,9 @@ void rotateFigure(Figure *f, double angle) {
 }
 
 static int64_t xFracToScreen(double xFrac) {
-    int64_t screenWidth = getScreenWidth();
     return (int64_t)(xFrac * screenWidth);
 }
 static int64_t yFracToScreen(double yFrac) {
-    int64_t screenHeight = getScreenHeight();
     return (int64_t)(yFrac * screenHeight);
 }
 

@@ -4,7 +4,6 @@
 #include <rtc_time.h>
 #include "lib.h"
 #include <time.h>
-
 #define REGISTERS 18
 uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t r9){
     uint64_t result;
@@ -29,7 +28,7 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
             result = changeFontSize(new_size);
             break;
         case(SYS_GET_REGS_ID):
-            result = sys_get_regs();
+            result = sys_get_regs(rdi);
             break;
         case(SYS_GET_SCREEN_WIDTH_ID):
             result = sys_get_screen_width();
@@ -88,56 +87,15 @@ uint64_t sys_clear(){
     return 0;
 }
 
-uint64_t sys_get_regs(){
+uint64_t sys_get_regs(uint64_t* toRetRegs){
     uint64_t backupDone = isBackupDone();
     if (backupDone) {
         uint64_t *regs = getRegs();
-        printRegisters(regs);
-    } else{
-        putString("Error: No backup done. Press CTRL to take registers snapshot.", 0xFFFFFF, 0x000000);
-        newline(0x000000);
+        for(int i = 0; i < REGISTERS; i++){
+            toRetRegs[i] = regs[i];
+        }
     }
     return backupDone;
-    
-}
-
-static void convertToHex(uint64_t number, char buffer[16]) {
-    int index = 15;
-    do {
-        int remainder = number % 16;
-        if (remainder < 10)
-            buffer[index] = remainder + '0';
-        else
-            buffer[index] = remainder + 'A' - 10;
-        number /= 16;
-        index--;
-    } while (index != -1);
-}
-void printRegisters(uint64_t *regs) {
-    const char *registerTitles[REGISTERS] = {
-        "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP",
-        "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15",
-        "RIP", "RFLAGS"
-    };
-
-    // Buffer para convertir a hexadecimal
-    char buffer[19];
-        buffer[0] = '0';
-        buffer[1] = 'x';
-        buffer[18] = '\0';
-
-	// Imprimo los registros
-	for (int i = 0; i < 18; i++) {
-        putString(registerTitles[i], 0xFFFFFF, 0x000000); //
-        putString(" - ", 0xFFFFFF, 0x000000); 
-        convertToHex(regs[i], buffer + 2);
-        putString(buffer, 0xFFFFFF, 0x000000);
-        if (i % 4 == 3)
-            newline(0x000000);
-        else
-            putString(" || ", 0xFFFFFF, 0x000000); 
-    }
-    newline(0x000000);
 }
 
 uint64_t sys_get_time(uint64_t rdi){

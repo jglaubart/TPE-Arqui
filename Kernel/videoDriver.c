@@ -402,7 +402,6 @@ void drawRectangle(const Point corners[4], uint32_t color){
         int count = 0;
 
         // 3a) Compute intersections with each edge (corner[e] to corner[(e+1)%4])
-        //     We avoid `continue` by checking the return value of edgeIntersectsScanline
         for (int e = 0; e < 4; e++) {
             const Point *p0 = &corners[e];
             const Point *p1 = &corners[(e + 1) % 4];
