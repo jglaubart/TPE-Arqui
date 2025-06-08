@@ -12,5 +12,5 @@ unsigned char nextFromBuffer();
 
 uint8_t isMappedChar(uint8_t makeCode, int index);
 uint8_t isAlpha(char c);
-
+uint8_t isCharPressed(char c);
 #endif

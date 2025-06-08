@@ -159,6 +159,7 @@ static const char ps2_make_keymap[PS2_KEYMAP_SIZE][3] = {
 };
 
 
+static uint8_t key_states[HID_KEYMAP_SIZE] = {0};
 static char buffer[BUFFER_SIZE] = {0};
 static int currentKey = 0;
 static int nextToRead = 0;
@@ -197,6 +198,9 @@ void writeInBuffer(){
         index = altGrPressed ? ALTGR_PRESSED_INDEX : index;
         if(isMappedChar(makeCode, index)){
             char c = ps2_make_keymap[makeCode][index];
+            if(c != 0){
+                key_states[(unsigned char) c] = pressed;
+            }
             if(isAlpha(c)){
                 if(capsLock){
                     index = (index == SHIFT_PRESSED_INDEX) ? 0 : ((index == 0) ? SHIFT_PRESSED_INDEX : index);
@@ -231,4 +235,8 @@ uint8_t isMappedChar(uint8_t makeCode, int index){
 
 uint8_t isAlpha(char c){
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == 164 || c == 165;
+}
+
+uint8_t isCharPressed(char c) {
+    return key_states[(unsigned char)c];
 }
