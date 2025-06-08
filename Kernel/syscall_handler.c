@@ -42,6 +42,9 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
         case(SYS_DRAW_RECTANGLE_ID):
             result = sys_draw_rectangle((int64_t (*)[2])rdi, rsi);
             break;
+        case(SYS_IS_PRESSED_ID):
+            result = sys_is_pressed((char) rdi);
+            break;
         default:
             result = -1;
             break;
@@ -136,4 +139,8 @@ uint64_t sys_draw_rectangle(int64_t (*corners)[2], uint32_t color) {
     }
     drawRectangle(points, color);
     return 0;
+}
+
+uint64_t sys_is_pressed(char c) {
+    return isCharPressed(c);
 }

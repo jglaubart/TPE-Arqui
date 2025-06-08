@@ -77,22 +77,26 @@ void pongisInit(){
         drawPhysicsEntity(&player);
 
         char c = 0;
-        readChar(&c);
-        if (c=='q'||c=='Q'){
+        if (isPressed('q') || isPressed('Q')) {
             clearScreen();
-            break;   
+            return;   
         }
-
-        vec2d accel = {0,0};
-        if (c=='w'||c=='W'){
+        vec2d accel = {0, 0};
+        if(isPressed('w') || isPressed('W')){
             accel.x = cos_taylor(player.angle) * ACCEL_MAG;
             accel.y = sin_taylor(player.angle) * ACCEL_MAG;
-        } 
-        else if (c=='a'||c=='A') rotateEntity(&player, LEFT_ROTATION);
-        else if (c=='d'||c=='D') rotateEntity(&player, RIGHT_ROTATION);
+        }
+        if(isPressed('a') || isPressed('A')){
+            rotateEntity(&player, LEFT_ROTATION);
+        }
+        if(isPressed('d') || isPressed('D')){
+            rotateEntity(&player, RIGHT_ROTATION);
+        }
 
         setAcceleration(&player, accel);
         updatePhysicsEntity(&player, TIME_STEP);
         setAcceleration(&player, (vec2d){0,0});
     }
 }
+
+

@@ -189,18 +189,18 @@ void writeInBuffer(){
                 saveRegisters();
             }
             break;
-        
     }
 
-    if(pressed){
-        int index;
-        index = shiftPressed ? SHIFT_PRESSED_INDEX : 0;
-        index = altGrPressed ? ALTGR_PRESSED_INDEX : index;
-        if(isMappedChar(makeCode, index)){
-            char c = ps2_make_keymap[makeCode][index];
-            if(c != 0){
-                key_states[(unsigned char) c] = pressed;
-            }
+    int index;
+    index = shiftPressed ? SHIFT_PRESSED_INDEX : 0;
+    index = altGrPressed ? ALTGR_PRESSED_INDEX : index;
+
+    if(isMappedChar(makeCode, index)){
+        char c = ps2_make_keymap[makeCode][index];
+        if(c != 0){
+            key_states[(unsigned char) c] = pressed;
+        }
+        if(pressed){
             if(isAlpha(c)){
                 if(capsLock){
                     index = (index == SHIFT_PRESSED_INDEX) ? 0 : ((index == 0) ? SHIFT_PRESSED_INDEX : index);
@@ -208,9 +208,10 @@ void writeInBuffer(){
                 }
             }
             buffer[currentKey++ % BUFFER_SIZE] = c;
+        } else {
+            buffer[currentKey++ % BUFFER_SIZE] = 0;
         }
-    }
-    else{
+    } else if(pressed) {
         buffer[currentKey++ % BUFFER_SIZE] = 0;
     }
     currentKey = currentKey % BUFFER_SIZE;

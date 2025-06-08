@@ -370,6 +370,9 @@ uint64_t getScreenHeight() {
     return sys_call(SYS_GET_SCREEN_HEIGHT_ID, 0, 0, 0, 0);
 }
 
+uint64_t isPressed(char c) {
+    return sys_call(SYS_IS_PRESSED_ID, (uint64_t)c, 0, 0, 0);
+}
 
 /**
  * normalize_angle:

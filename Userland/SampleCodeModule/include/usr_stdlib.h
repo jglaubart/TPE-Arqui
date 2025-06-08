@@ -44,6 +44,7 @@ void sleep(uint64_t ticks);
 void getTime();
 uint64_t getScreenWidth();
 uint64_t getScreenHeight();
+uint64_t isPressed(char c);
 
 double normalize_angle(double x);
 double sin_taylor(double x);
