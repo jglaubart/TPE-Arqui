@@ -12,10 +12,18 @@
 
 #define DEFAULT_LINES 25
 
+enum{
+	FRONT_BUFFER = 0,
+	BACK_BUFFER = 1
+};
+
 typedef struct {
 	int64_t x;
 	int64_t y;
 }Point;
+
+void setDrawBuffer(int buffer);
+void showBackBuffer();
 
 void initVideoDriver();
 

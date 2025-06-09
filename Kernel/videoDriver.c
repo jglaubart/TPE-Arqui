@@ -47,24 +47,50 @@ typedef struct vbe_mode_info_structure * VBEInfoPtr;
 
 VBEInfoPtr VBE_mode_info = (VBEInfoPtr) 0x0000000000005C00;
 
-const struct font_desc *default_font_desc = &font_vga_8x16;
+// Double-buffer pointers and size
+static uint8_t *frontBuffer = 0;
+static uint8_t *backBuffer  = 0;
+static uint8_t *drawBuffer  = 0;
+static uint64_t bufferSize  = 0;
 
+const struct font_desc *default_font_desc = &font_vga_8x16;
 static struct font_desc *desc;
 unsigned int default_font_size;
 static unsigned int font_size;
 
-void initVideoDriver(){
-	desc = (struct font_desc *)default_font_desc;
-	default_font_size = (VBE_mode_info->height - 2 * Y_MARGIN) / (DEFAULT_LINES * (desc->height));
-	font_size = default_font_size;
+// Set which buffer to draw into: 0 = front, 1 = back
+void setDrawBuffer(int buffer) {
+    if (!frontBuffer) return;
+    drawBuffer = (buffer == FRONT_BUFFER ? frontBuffer : backBuffer);
+}
+
+// Copy backBuffer into frontBuffer (display)
+void showBackBuffer() {
+    if (!frontBuffer || !backBuffer) return;
+    memcpy(frontBuffer, backBuffer, bufferSize);
+}
+
+void initVideoDriver() {
+    desc = (struct font_desc *)default_font_desc;
+    default_font_size = (VBE_mode_info->height - 2 * Y_MARGIN)
+                        / (DEFAULT_LINES * desc->height);
+    font_size = default_font_size;
+
+    // Initialize double buffer pointers
+    frontBuffer = (uint8_t *)VBE_mode_info->framebuffer;
+    bufferSize  = (uint64_t)VBE_mode_info->pitch * VBE_mode_info->height;
+    backBuffer  = frontBuffer + bufferSize;
+
+    drawBuffer  = frontBuffer; // Default to front buffer
 }
 
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
-	uint8_t * framebuffer = (uint8_t *) VBE_mode_info->framebuffer;
-    uint64_t offset = (x * ((VBE_mode_info->bpp)/8)) + (y * VBE_mode_info->pitch);
-    framebuffer[offset]     =  (hexColor) & 0xFF;
-    framebuffer[offset+1]   =  (hexColor >> 8) & 0xFF; 
-    framebuffer[offset+2]   =  (hexColor >> 16) & 0xFF;
+    if (!drawBuffer) return;
+    uint64_t offset = x * ((VBE_mode_info->bpp) / 8)
+                    + y * VBE_mode_info->pitch;
+    drawBuffer[offset]   =  hexColor       & 0xFF;
+    drawBuffer[offset+1] = (hexColor >> 8) & 0xFF;
+    drawBuffer[offset+2] = (hexColor >> 16)& 0xFF;
 }
 
 void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color){
@@ -191,35 +217,27 @@ void clearScreen(uint32_t bg_color){
 	resetCursor_y();
 }
 
-void scrollUp(uint32_t bg_color){
-	uint8_t *framebuffer = (uint8_t*)VBE_mode_info->framebuffer;
-	uint64_t row_size = VBE_mode_info->pitch * desc->height * font_size;
-	uint64_t screen_size = VBE_mode_info->pitch * VBE_mode_info->height;
-
-	memcpy(
-		framebuffer,
-		framebuffer + row_size,
-		screen_size - row_size
-	);
-
-	// Clear the last row using memset for each pixel component
-	uint64_t last_row_offset = screen_size - row_size;
-	uint8_t r = (bg_color) & 0xFF;
-	uint8_t g = (bg_color >> 8) & 0xFF;
-	uint8_t b = (bg_color >> 16) & 0xFF;
-	uint8_t bpp_bytes = VBE_mode_info->bpp / 8;
-
-	for (uint64_t i = last_row_offset; i < screen_size; i += bpp_bytes) {
-		framebuffer[i] = r;
-		if (bpp_bytes > 1) framebuffer[i + 1] = g;
-		if (bpp_bytes > 2) framebuffer[i + 2] = b;
-	}
-
-	// Move cursor to start of last row
-	cursorPos.y -= desc->height * font_size;
-	if (cursorPos.y < Y_MARGIN) {
-		cursorPos.y = Y_MARGIN;
-	}
+void scrollUp(uint32_t bg_color) {
+    if (!drawBuffer) return;
+    uint64_t row_size    = VBE_mode_info->pitch * desc->height * font_size;
+    uint64_t screen_size = bufferSize;
+    // move up one text row
+    memcpy(drawBuffer,
+           drawBuffer + row_size,
+           screen_size - row_size);
+    // clear last row
+    uint8_t r = bg_color & 0xFF;
+    uint8_t g = (bg_color >> 8) & 0xFF;
+    uint8_t b = (bg_color >> 16) & 0xFF;
+    uint8_t bpp_bytes = VBE_mode_info->bpp / 8;
+    for (uint64_t off = screen_size - row_size; off < screen_size; off += bpp_bytes) {
+        drawBuffer[off] = r;
+        if (bpp_bytes > 1) drawBuffer[off+1] = g;
+        if (bpp_bytes > 2) drawBuffer[off+2] = b;
+    }
+    cursorPos.y -= desc->height * font_size;
+    if (cursorPos.y < Y_MARGIN)
+        cursorPos.y = Y_MARGIN;
 }
 
 uint64_t changeFontSize(uint64_t new_font_size){

@@ -374,6 +374,14 @@ uint64_t isPressed(char c) {
     return sys_call(SYS_IS_PRESSED_ID, (uint64_t)c, 0, 0, 0);
 }
 
+void setDrawBuffer(int buffer) {
+    sys_call(SYS_SET_DRAW_BUFFER_ID, buffer, 0, 0, 0);
+}
+
+void showBackBuffer() {
+    sys_call(SYS_SHOW_BACK_BUFFER_ID, 0, 0, 0, 0);
+}
+
 /**
  * normalize_angle:
  *   Bring any angle (in radians) into the principal range [-π, +π].

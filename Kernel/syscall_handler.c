@@ -45,6 +45,12 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
         case(SYS_IS_PRESSED_ID):
             result = sys_is_pressed((char) rdi);
             break;
+        case(SYS_SHOW_BACK_BUFFER_ID):
+            result = sys_show_back_buffer();
+            break;
+        case(SYS_SET_DRAW_BUFFER_ID):
+            result = sys_set_draw_buffer(rdi);
+            break;
         default:
             result = -1;
             break;
@@ -143,4 +149,14 @@ uint64_t sys_draw_rectangle(int64_t (*corners)[2], uint32_t color) {
 
 uint64_t sys_is_pressed(char c) {
     return isCharPressed(c);
+}
+
+uint64_t sys_show_back_buffer(){
+    showBackBuffer();
+    return 0;
+}
+
+uint64_t sys_set_draw_buffer(int buffer) {
+    setDrawBuffer(buffer);
+    return 0;
 }

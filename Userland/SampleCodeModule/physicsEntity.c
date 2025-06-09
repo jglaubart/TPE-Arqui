@@ -118,30 +118,22 @@ int circleCircleCollide(const physicsEntity *a, const physicsEntity *b) {
 
 void resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restitution) {
     if (!circleCircleCollide(a,b)) return;
-    vec2d n = vec2d_normalize((vec2d){
-        b->position.x - a->position.x,
-        b->position.y - a->position.y
-    });
-    if (a->type == ENTITY_HEAVY && b->type == ENTITY_LIGHT) {
-        double vn = vec2d_dot(b->velocity, n);
-        b->velocity = vec2d_add(b->velocity,
-            vec2d_scale(n, -(1+restitution)*vn));
-        return;
-    }
-    if (a->type == ENTITY_LIGHT && b->type == ENTITY_HEAVY) {
-        double vn = vec2d_dot(a->velocity, n);
-        a->velocity = vec2d_add(a->velocity,
-            vec2d_scale(n, -(1+restitution)*vn));
-        return;
-    }
+    vec2d n = vec2d_normalize((vec2d){b->position.x - a->position.x, b->position.y - a->position.y});
     double va_n = vec2d_dot(a->velocity, n);
     double vb_n = vec2d_dot(b->velocity, n);
     double dA = vb_n - va_n;
     double dB = va_n - vb_n;
-    a->velocity = vec2d_add(a->velocity,
-        vec2d_scale(n, dA*(1+restitution)));
-    b->velocity = vec2d_add(b->velocity,
-        vec2d_scale(n, dB*(1+restitution)));
+    if (a->type == ENTITY_HEAVY && b->type == ENTITY_LIGHT) {
+        b->velocity = vec2d_add(b->velocity, vec2d_scale(n, dB*(1+restitution)));
+        return;
+    }
+    if (a->type == ENTITY_LIGHT && b->type == ENTITY_HEAVY) {
+        a->velocity = vec2d_add(a->velocity, vec2d_scale(n, dA*(1+restitution)));
+        return;
+    }
+    
+    a->velocity = vec2d_add(a->velocity, vec2d_scale(n, dA*(1+restitution)));
+    b->velocity = vec2d_add(b->velocity, vec2d_scale(n, dB*(1+restitution)));
 }
 
 void rotateEntity(physicsEntity * e, double angleOffset){

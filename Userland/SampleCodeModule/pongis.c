@@ -1,102 +1,169 @@
 #include "pongis.h"
 #include <usr_stdlib.h>
+#include <syscalls.h>
 #include "figures.h"
 #include "physicsEntity.h"
 
-#define ACCEL_MAG   4.0    // acceleration per input
-#define TIME_STEP   0.05    // seconds per frame
-#define RIGHT_ROTATION 0.1
-#define LEFT_ROTATION -RIGHT_ROTATION
+static physicsEntity *entities[MAX_ENTITIES];
+int entityCount = 0;
 
-void pongisInit(){
-    Figure flechita;
-    vec2d topLeft2 = {0.3, 0.2375};
-    vec2d bottomRight2 = {0.4, 0.2875};
-    newRectangle(&flechita, topLeft2, bottomRight2, 0xFF0000);
-    setRotationCenter(&flechita, (vec2d){0.275, 0.275}); // Set rotation center for rect2
-    Figure jugador;
-    vec2d topLeft3 = {0.25, 0.25};
-    vec2d bottomRight3 = {0.3, 0.3};
-    newCircle(&jugador, topLeft3, bottomRight3, 0x0000FF);
-    Figure *figuresp[] = {&flechita, &jugador};
-    /* while(1){
-        clearScreen();
-        for (int i = 0; i < 2; i++) {
-            drawFigure(figuresp[i]);
-        }
+// Global storage for players
+static Player players[MAX_ENTITIES];
+static int playerCount = 0;
 
-        // Check for user input using getchar (non-blocking)
-        int ch = getChar();
-        if (ch == 'w') {
-            // flechita direction
-            double angle = figuresp[1]->angle; // Assuming Figure has an 'angle' field
-            vec2d dir = {0.02 * cos_taylor(angle), 0.02 * sin_taylor(angle)};
-            moveFigure(&flechita, dir); // Move flechita
+Player createPlayer(vec2d center, uint32_t circleColor, uint32_t arrowColor, PlayerControls controls, int playerId, Figure* playerFig, Figure* arrowFig) {
+    // Create the circle figure (player body)
+    vec2d circleTopLeft = {center.x - PLAYER_RADIUS, center.y - PLAYER_RADIUS};
+    vec2d circleBottomRight = {center.x + PLAYER_RADIUS, center.y + PLAYER_RADIUS};
+    newCircle(playerFig, circleTopLeft, circleBottomRight, circleColor);
+    
+    // Create the arrow figure (direction indicator)
+    vec2d arrowTopLeft = {center.x + PLAYER_RADIUS, center.y - ARROW_HEIGHT/2};
+    vec2d arrowBottomRight = {center.x + PLAYER_RADIUS + ARROW_WIDTH, center.y + ARROW_HEIGHT/2};
+    newRectangle(arrowFig, arrowTopLeft, arrowBottomRight, arrowColor);
+    
+    // Set rotation center for arrow to be same as player center
+    setRotationCenter(arrowFig, center);
+    
+    // Create the Player struct
+    Player player;
+    
+    // Initialize the physics entity with the provided figures
+    // We need both figures for shapes but only the circle for collision
+    Figure *shapes[] = {playerFig, arrowFig};
+    Figure *colliders[] = {playerFig};
+    initPhysicsEntity(&player.entity, shapes, 2, colliders, 1, ENTITY_HEAVY, 0.25, 1);
+    
+    // Set player properties
+    player.controls = controls;
+    player.playerId = playerId;
+    player.score = 0;
+    
+    return player;
+}
 
-            // jugador direction (assuming same angle as flechita)
-            moveFigure(&jugador, dir); // Move jugador
-        }
-        else if(ch == 'a'){
-            rotateFigure(&flechita, -0.1); // Rotate flechita left
-            rotateFigure(&jugador, -0.1); // Rotate jugador left
-        }
-        else if(ch == 'd'){
-            rotateFigure(&flechita, 0.1); // Rotate flechita right
-            rotateFigure(&jugador, 0.1); // Rotate jugador right
-        }
-        else if(ch == 's'){
-            vec2d dir = {0.02 * cos_taylor(figuresp[1]->angle), 0.02 * sin_taylor(figuresp[1]->angle)};
-            moveFigure(&flechita, (vec2d){-dir.x, -dir.y}); // Move flechita back
-            moveFigure(&jugador, (vec2d){-dir.x, -dir.y}); // Move jugador back
-        }
-        else if(ch == 'q'){
-            break; // Exit the loop if 'q' is pressed
-        }
-    }
- */
+physicsEntity* createBall(vec2d center, uint32_t color, Figure* ballFig, physicsEntity* ballEntity) {
+    // Create the ball figure (small circle)
+    vec2d ballTopLeft = {center.x - BALL_RADIUS, center.y - BALL_RADIUS};
+    vec2d ballBottomRight = {center.x + BALL_RADIUS, center.y + BALL_RADIUS};
+    newCircle(ballFig, ballTopLeft, ballBottomRight, color);
+    
+    // Initialize the physics entity with the ball figure
+    Figure *shapes[] = {ballFig};
+    Figure *colliders[] = {ballFig};
+    initPhysicsEntity(ballEntity, shapes, 1, colliders, 1, ENTITY_LIGHT, 0.1, 1);
+    
+    return ballEntity;
+}
 
-    Figure playerFig;
-    newCircle(&playerFig,
-        (vec2d){0.45,0.45}, (vec2d){0.55,0.55}, 0x0000FF);
-        
-    Figure arrowFig;
-    newRectangle(&arrowFig, (vec2d){0.55, 0.475}, (vec2d){0.65, 0.525}, 0xFF0000);
-    setRotationCenter(&arrowFig, (vec2d){0.5, 0.5}); //same rotation center as playerFig
-
-    Figure *shapes[]    = { &playerFig, &arrowFig };
-    Figure *colliders[] = { &playerFig };
-    physicsEntity player;
-    // friction non-zero so it slows down: e.g., μ = 0.5
-    initPhysicsEntity(&player,
-                      shapes,    2,
-                      colliders, 1,
-                      ENTITY_HEAVY, 0.25, 1);
-
-    while (1) {
-        clearScreen();
-        drawPhysicsEntity(&player);
-
-        char c = 0;
-        if (isPressed('q') || isPressed('Q')) {
-            clearScreen();
-            return;   
-        }
-        vec2d accel = {0, 0};
-        if(isPressed('w') || isPressed('W')){
-            accel.x = cos_taylor(player.angle) * ACCEL_MAG;
-            accel.y = sin_taylor(player.angle) * ACCEL_MAG;
-        }
-        if(isPressed('a') || isPressed('A')){
-            rotateEntity(&player, LEFT_ROTATION);
-        }
-        if(isPressed('d') || isPressed('D')){
-            rotateEntity(&player, RIGHT_ROTATION);
-        }
-
-        setAcceleration(&player, accel);
-        updatePhysicsEntity(&player, TIME_STEP);
-        setAcceleration(&player, (vec2d){0,0});
+// Helper function to add any entity to the global entities array
+void addEntity(physicsEntity* entity) {
+    if (entityCount < MAX_ENTITIES && entity) {
+        entities[entityCount] = entity;
+        entityCount++;
     }
 }
 
+// Player management functions
+void addPlayer(Player player) {
+    if (playerCount < MAX_ENTITIES) {
+        players[playerCount] = player;
+        
+        // Add the physics entity to the global entities array for collision detection
+        addEntity(&players[playerCount].entity);
+        
+        playerCount++;
+    }
+}
 
+void handlePlayerInput(Player* player) {
+    if (!player) return;
+    
+    vec2d accel = {0, 0};
+    
+    // Check for movement input
+    if (isPressed(player->controls.forward) || isPressed(player->controls.forward - 32)) { // Handle both cases
+        accel.x = cos_taylor(player->entity.angle) * ACCEL_MAG;
+        accel.y = sin_taylor(player->entity.angle) * ACCEL_MAG;
+    }
+    if (isPressed(player->controls.backward) || isPressed(player->controls.backward - 32)) {
+        accel.x = -cos_taylor(player->entity.angle) * ACCEL_MAG;
+        accel.y = -sin_taylor(player->entity.angle) * ACCEL_MAG;
+    }
+    if (isPressed(player->controls.left) || isPressed(player->controls.left - 32)) {
+        rotateEntity(&player->entity, LEFT_ROTATION);
+    }
+    if (isPressed(player->controls.right) || isPressed(player->controls.right - 32)) {
+        rotateEntity(&player->entity, RIGHT_ROTATION);
+    }
+    
+    setAcceleration(&player->entity, accel);
+}
+
+Player* getPlayerById(int playerId) {
+    for (int i = 0; i < playerCount; i++) {
+        if (players[i].playerId == playerId) {
+            return &players[i];
+        }
+    }
+    return 0; // Player not found
+}
+
+void pongisInit(){
+    setDrawBuffer(BACK_BUFFER);
+
+    // Example: Creating a single player using the new system
+    Figure playerFig, arrowFig;
+    PlayerControls singlePlayerControls = {'w', 'a', 'd', 's'};
+    Player singlePlayer = createPlayer((vec2d){0.5, 0.5}, 0x0000FF, 0xFF0000, singlePlayerControls, 1, &playerFig, &arrowFig);
+    addPlayer(singlePlayer);
+
+    // Add a light ball for testing using the new createBall function
+    Figure ballFig;
+    physicsEntity ball;
+    createBall((vec2d){0.3, 0.3}, 0x00FF00, &ballFig, &ball);
+    addEntity(&ball);
+
+    while (1) {
+        clearScreen();
+        
+        // Handle input for the player
+        handlePlayerInput(&players[0]);
+        
+        // Update physics for all entities
+        checkCollisions(); // Handle collisions between all entities
+        updateEntities();
+        drawEntities();
+
+        if (isPressed('q') || isPressed('Q')) {
+            setDrawBuffer(FRONT_BUFFER);
+            clearScreen();
+            myprintf("Exiting pongis...\n");
+            return;   
+        }
+        
+        showBackBuffer();
+    }
+}
+
+void checkCollisions() {
+    for (int i = 0; i < entityCount; i++) {
+        for (int j = i + 1; j < entityCount; j++) {
+            resolveCollisionSimple(entities[i], entities[j], RESTITUTION);
+        }
+    }
+}
+
+void updateEntities() {
+    for (int i = 0; i < entityCount; i++) {
+        updatePhysicsEntity(entities[i], TIME_STEP);
+        setAcceleration(entities[i], (vec2d){0, 0}); // Reset acceleration after update
+        drawPhysicsEntity(entities[i]);
+    }
+}
+
+void drawEntities() {
+    for (int i = 0; i < entityCount; i++) {
+        drawPhysicsEntity(entities[i]);
+    }
+}
