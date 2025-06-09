@@ -76,6 +76,42 @@ void addPlayer(Player player) {
     }
 }
 
+Hole* createHole(vec2d position, double radius, Figure* holeFig) {
+    uint32_t color = 0x000000; // Black color for the hole
+    vec2d topLeft = {position.x - radius, position.y - radius};
+    vec2d bottomRight = {position.x + radius, position.y + radius};
+    Hole* hole;
+    hole->color = color;
+    hole->position = position;
+    hole->radius = radius;
+    hole->figure = holeFig;
+    newCircle(holeFig, topLeft, bottomRight, color);
+    return hole;
+}
+
+uint64_t isInGoalPosition(vec2d holePosition, double radius, vec2d ballPosition) {
+    // Calculate the distance from the ball to the hole center
+    double dx = ballPosition.x - holePosition.x;
+    double dy = ballPosition.y - holePosition.y;
+    double distanceSquared = dx * dx + dy * dy;
+    
+    // Check if the distance is less than or equal to the radius squared
+    return (distanceSquared <= radius * radius);
+}
+
+int64_t checkGoal(Hole* hole, physicsEntity* ball) {
+    if(!ball || !hole || !hole->figure){
+        return -1;
+    }
+
+    // Check if the ball is within the hole's radius
+    if(isInGoalPosition(hole->position, hole->radius, ball->position)) {
+        // Ball is in the hole
+        return 1; // Goal scored
+    }
+
+}
+
 void handlePlayerInput(Player* player) {
     if (!player) return;
     

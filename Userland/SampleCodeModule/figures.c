@@ -86,7 +86,6 @@ void newCircle(Figure *c, vec2d topLeft, vec2d bottomRight, uint32_t color){
     c->color = color;
     c->type = CIRCLE;
 
-    // Point draw() to stub (to be implemented later)
     c->draw = drawCircle;
     c->rotate = rotateCircle;
 }
@@ -111,8 +110,7 @@ void newRectangle(Figure *r, vec2d topLeft, vec2d bottomRight, uint32_t color) {
 }
 
 
-// ------------------------
-// Draw stubs (not implemented yet)
+
 static void drawCircle(Figure *self) {
     //arreglo provisorio
     if(screenHeight == 0 || screenWidth == 0){

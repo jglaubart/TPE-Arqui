@@ -37,6 +37,19 @@ typedef struct {
     int score;              // Player's current score
 } Player;
 
+typedef struct {
+    physicsEntity * ballEntity;
+    int playerId;
+
+} Ball;
+typedef struct {
+    vec2d position;
+    double radius;
+    uint32_t color; // Color of the hole
+    Figure* figure; // Pointer to the figure representing the hole
+} Hole;
+
+
 void pongisInit();
 void pongisDraw();
 void pongisUpdate();
@@ -45,6 +58,7 @@ void updateEntities();
 void drawEntities();
 Player createPlayer(vec2d center, uint32_t circleColor, uint32_t arrowColor, PlayerControls controls, int playerId, Figure* playerFig, Figure* arrowFig);
 physicsEntity* createBall(vec2d center, uint32_t color, Figure* ballFig, physicsEntity* ballEntity);
+Hole* createHole(vec2d position, double radius, Figure* holeFig);
 void addEntity(physicsEntity* entity);
 
 // Player management functions
