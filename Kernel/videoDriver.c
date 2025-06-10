@@ -57,6 +57,7 @@ const struct font_desc *default_font_desc = &font_vga_8x16;
 static struct font_desc *desc;
 unsigned int default_font_size;
 static unsigned int font_size;
+uint32_t bg_color = DEFAULT_BG_COLOR;
 
 // Set which buffer to draw into: 0 = front, 1 = back
 void setDrawBuffer(int buffer) {
@@ -207,7 +208,11 @@ void backspace(uint32_t bgc){
 	drawChar(cursorPos, ' ', bgc, bgc);
 }
 
-void clearScreen(uint32_t bg_color){
+void changeBackgroundColor(uint32_t color){
+    bg_color = color;
+}
+
+void clearScreen(){
 	for(int i = 0; i < VBE_mode_info->height; i++){
 		for(int j = 0; j < VBE_mode_info->width; j++){
 			putPixel(bg_color, j, i);

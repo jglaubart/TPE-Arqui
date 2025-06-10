@@ -15,6 +15,7 @@ enum{
     SYS_CLEAR_ID = 2,
     SYS_TIME_ID = 3,
     SYS_SLEEP_ID = 4,
+    SYS_BEEP_ID = 5,
     SYS_CHANGE_FONT_SIZE_ID = 10,
     SYS_GET_REGS_ID = 11,
     SYS_GET_SCREEN_WIDTH_ID = 12,
@@ -23,7 +24,8 @@ enum{
     SYS_DRAW_RECTANGLE_ID = 15,
     SYS_IS_PRESSED_ID = 16,
     SYS_SHOW_BACK_BUFFER_ID = 17,
-    SYS_SET_DRAW_BUFFER_ID = 18
+    SYS_SET_DRAW_BUFFER_ID = 18,
+    SYS_CHANGE_BG_COLOR_ID = 19
 };
 
 
@@ -35,6 +37,7 @@ uint64_t sys_clear();
 uint64_t sys_get_regs();
 uint64_t sys_get_time();
 uint64_t sys_sleep(uint64_t ticksToWait);
+uint64_t sys_beep(uint64_t freq, uint64_t ticks);
 uint64_t changeFontSize(uint64_t newSize);
 uint64_t sys_get_screen_width();
 uint64_t sys_get_screen_height();
@@ -43,5 +46,6 @@ uint64_t sys_draw_rectangle(int64_t (*corners)[2], uint32_t color);
 uint64_t sys_is_pressed(char c);
 uint64_t sys_show_back_buffer();
 uint64_t sys_set_draw_buffer(int buffer);
+uint64_t sys_change_bg_color(uint32_t color);
 void printRegisters(uint64_t *regs); 
 #endif

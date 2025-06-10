@@ -62,6 +62,8 @@
     "exceptions.h": "c",
     "lib.h": "c",
     "videodriver.h": "c",
-    "stdint.h": "c"
+    "stdint.h": "c",
+    "sounddriver.h": "c",
+    "rtc_time.h": "c"
   }
 }

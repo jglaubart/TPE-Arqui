@@ -289,6 +289,10 @@ uint64_t readLine(char *buf, uint64_t size){
     return ans;
 }
 
+void beep(uint64_t freq, uint64_t ticks){
+    sys_call(SYS_BEEP_ID, freq, ticks, 0, 0);
+}
+
 int changeFontSize(unsigned int newSize){
     //putChar('\n');
     int res = sys_call(SYS_CHANGE_FONT_SIZE, newSize, 0, 0, 0);
@@ -380,6 +384,10 @@ void setDrawBuffer(int buffer) {
 
 void showBackBuffer() {
     sys_call(SYS_SHOW_BACK_BUFFER_ID, 0, 0, 0, 0);
+}
+
+void changeBackgroundColor(uint32_t color){
+    sys_call(SYS_CHANGE_BG_COLOR_ID, color, 0, 0, 0);
 }
 
 /**

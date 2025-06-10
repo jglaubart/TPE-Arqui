@@ -39,9 +39,9 @@ void setTickFrequency(uint16_t freq)
 {
 	frequency = freq;
 	int ticks = PIT_FREQ / freq;
-	outb(0x43, 0xb6);
-	outb(0x40, (uint8_t)(ticks));
-	outb(0x40, (uint8_t)(ticks >> 8));
+	outp(0x43, 0xb6);
+	outp(0x40, (uint8_t)(ticks));
+	outp(0x40, (uint8_t)(ticks >> 8));
 }
 
 static int isLeap(uint16_t year)
@@ -64,8 +64,8 @@ void get_time(rtc_time_t* time)
 	uint8_t data[REGISTER_AMOUNT];
 	for (int i = 0; i < REGISTER_AMOUNT; i++)
 	{
-		outb(0x70, (NMI_DISABLE_BIT << 7) | (regNeeded[i]));
-		data[i] = inb(0x71);
+		outp(0x70, (NMI_DISABLE_BIT << 7) | (regNeeded[i]));
+		data[i] = inp(0x71);
 	}
 	time->seconds = 0xFF;
 	time->seconds = bcd_decimal(data[0]);

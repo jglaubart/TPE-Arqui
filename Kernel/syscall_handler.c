@@ -4,6 +4,8 @@
 #include <rtc_time.h>
 #include "lib.h"
 #include <time.h>
+#include <soundDriver.h>
+
 #define REGISTERS 18
 uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t r9){
     uint64_t result;
@@ -22,6 +24,9 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
             break;
         case(SYS_SLEEP_ID):
             result = sys_sleep(rdi);
+            break;
+        case(SYS_BEEP_ID):
+            result = sys_beep(rdi, rsi);
             break;
         case(SYS_CHANGE_FONT_SIZE_ID):
             unsigned int new_size = rdi;
@@ -50,6 +55,9 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
             break;
         case(SYS_SET_DRAW_BUFFER_ID):
             result = sys_set_draw_buffer(rdi);
+            break;
+        case(SYS_CHANGE_BG_COLOR_ID):
+            result = sys_change_bg_color((uint32_t)rdi);
             break;
         default:
             result = -1;
@@ -91,8 +99,12 @@ uint64_t sys_read(uint64_t fd, char *buf, uint64_t count){
 }
 
 uint64_t sys_clear(){
-    uint32_t bg_color = 0x000000; // Black background
-    clearScreen(bg_color);
+    clearScreen();
+    return 0;
+}
+
+uint64_t sys_beep(uint64_t freq, uint64_t ticks){
+    beep(freq, ticks);
     return 0;
 }
 
@@ -158,5 +170,10 @@ uint64_t sys_show_back_buffer(){
 
 uint64_t sys_set_draw_buffer(int buffer) {
     setDrawBuffer(buffer);
+    return 0;
+}
+
+uint64_t sys_change_bg_color(uint32_t color){
+    changeBackgroundColor(color);
     return 0;
 }

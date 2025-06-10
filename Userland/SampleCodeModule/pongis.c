@@ -11,6 +11,21 @@ int entityCount = 0;
 static Player players[MAX_ENTITIES];
 static int playerCount = 0;
 
+// Global storage for holes
+static Hole holes[MAX_HOLES];
+static Figure holeFigures[MAX_HOLES];      // Black inner figures
+static Figure borderFigures[MAX_HOLES];    // White border figures
+static int holeCount = 0;
+
+// Global storage for balls (separate from entities for goal checking)
+static physicsEntity balls[2]; // Max 2 balls (one per player)
+static Figure ballFigures[2];
+static int ballCount = 0;
+
+// Game state variables
+static int currentLevel = 1;
+static int levelComplete = 0;
+
 Player createPlayer(vec2d center, uint32_t circleColor, uint32_t arrowColor, PlayerControls controls, int playerId, Figure* playerFig, Figure* arrowFig) {
     // Create the circle figure (player body)
     vec2d circleTopLeft = {center.x - PLAYER_RADIUS, center.y - PLAYER_RADIUS};
@@ -76,17 +91,33 @@ void addPlayer(Player player) {
     }
 }
 
-Hole* createHole(vec2d position, double radius, Figure* holeFig) {
-    uint32_t color = 0xFFFFFF; // White color for the hole
-    vec2d topLeft = {position.x - radius, position.y - radius};
-    vec2d bottomRight = {position.x + radius, position.y + radius};
-    Hole* hole;
-    hole->color = color;
-    hole->position = position;
-    hole->radius = radius;
-    hole->figure = holeFig;
-    newCircle(holeFig, topLeft, bottomRight, color);
-    return hole;
+Hole* createHole(vec2d position, double radius, Figure* borderFig, Figure* holeFig) {
+    // Note: Hole radius is configurable to allow different difficulty levels
+    // Smaller holes = harder level, larger holes = easier level
+    if (holeCount >= MAX_HOLES) return 0; // No more holes can be created
+    
+    // Create white border circle (slightly larger than the hole)
+    double borderRadius = radius + 0.005; // Border is 0.005 units wider
+    uint32_t borderColor = 0xFFFFFF; // White color for the border
+    vec2d borderTopLeft = {position.x - borderRadius, position.y - borderRadius};
+    vec2d borderBottomRight = {position.x + borderRadius, position.y + borderRadius};
+    newCircle(borderFig, borderTopLeft, borderBottomRight, borderColor);
+    
+    // Create black hole circle (the actual hole)
+    uint32_t holeColor = 0x000000; // Black color for the hole
+    vec2d holeTopLeft = {position.x - radius, position.y - radius};
+    vec2d holeBottomRight = {position.x + radius, position.y + radius};
+    newCircle(holeFig, holeTopLeft, holeBottomRight, holeColor);
+    
+    // Use the global holes array
+    holes[holeCount].color = holeColor;
+    holes[holeCount].position = position;
+    holes[holeCount].radius = radius;
+    holes[holeCount].borderFigure = borderFig;
+    holes[holeCount].holeFigure = holeFig;
+    
+    holeCount++;
+    return &holes[holeCount - 1];
 }
 
 uint64_t isInGoalPosition(vec2d holePosition, double radius, vec2d ballPosition) {
@@ -100,7 +131,7 @@ uint64_t isInGoalPosition(vec2d holePosition, double radius, vec2d ballPosition)
 }
 
 int64_t checkGoal(Hole* hole, physicsEntity* ball) {
-    if(!ball || !hole || !hole->figure){
+    if(!ball || !hole || !hole->holeFigure){
         return -1;
     }
 
@@ -109,7 +140,8 @@ int64_t checkGoal(Hole* hole, physicsEntity* ball) {
         // Ball is in the hole
         return 1; // Goal scored
     }
-
+    
+    return 0; // No goal    
 }
 
 void handlePlayerInput(Player* player) {
@@ -145,51 +177,177 @@ Player* getPlayerById(int playerId) {
     return 0; // Player not found
 }
 
+void setLevel1() {
+    // Reset all arrays
+    entityCount = 0;
+    playerCount = 0;
+    holeCount = 0;
+    ballCount = 0;
+    
+    // Create Player 1 (left side)
+    static Figure player1Fig, arrow1Fig;
+    PlayerControls player1Controls = {'w', 'a', 'd', 's'};
+    Player player1 = createPlayer((vec2d){0.2, 0.5}, 0xFF0000, 0x0000FF, player1Controls, 1, &player1Fig, &arrow1Fig);
+    addPlayer(player1);
+    
+    // Create Player 2 (right side)
+    static Figure player2Fig, arrow2Fig;
+    PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
+    Player player2 = createPlayer((vec2d){0.8, 0.5}, 0x00FF00, 0x0000FF, player2Controls, 2, &player2Fig, &arrow2Fig);
+    addPlayer(player2);
+    
+    // Create Ball 1 (for Player 1)
+    createBall((vec2d){0.3, 0.3},  0xFF0000, &ballFigures[0], &balls[0]);
+    addEntity(&balls[0]);
+    ballCount++;
+    
+    // Create Ball 2 (for Player 2)  
+    createBall((vec2d){0.7, 0.7}, 0x00FF00, &ballFigures[1], &balls[1]);
+    addEntity(&balls[1]);
+    ballCount++;
+    
+    // Create single hole - Level 1 has one hole in the center
+    double level1HoleRadius = 0.035; // Medium difficulty
+    createHole((vec2d){0.5, 0.5}, level1HoleRadius, &borderFigures[0], &holeFigures[0]);
+}
+
+void setLevel2() {
+    // Reset all arrays
+    entityCount = 0;
+    playerCount = 0;
+    holeCount = 0;
+    ballCount = 0;
+    
+    // Create Player 1 (left side)
+    static Figure player1Fig, arrow1Fig;
+    PlayerControls player1Controls = {'w', 'a', 'd', 's'};
+    Player player1 = createPlayer((vec2d){0.15, 0.5}, 0x0000FF, 0xFF0000, player1Controls, 1, &player1Fig, &arrow1Fig);
+    addPlayer(player1);
+    
+    // Create Player 2 (right side)
+    static Figure player2Fig, arrow2Fig;
+    PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
+    Player player2 = createPlayer((vec2d){0.85, 0.5}, 0xFF0000, 0x0000FF, player2Controls, 2, &player2Fig, &arrow2Fig);
+    addPlayer(player2);
+    
+    // Create Ball 1 (for Player 1)
+    createBall((vec2d){0.25, 0.3}, 0x00FF00, &ballFigures[0], &balls[0]);
+    addEntity(&balls[0]);
+    ballCount++;
+    
+    // Create Ball 2 (for Player 2)  
+    createBall((vec2d){0.75, 0.7}, 0x00FF00, &ballFigures[1], &balls[1]);
+    addEntity(&balls[1]);
+    ballCount++;
+    
+    // Create single hole - Level 2 has one hole off-center (harder)
+    double level2HoleRadius = 0.03; // Smaller hole = harder difficulty
+    createHole((vec2d){0.6, 0.3}, level2HoleRadius, &borderFigures[0], &holeFigures[0]);
+}
+
+void drawHoles() {
+    for (int i = 0; i < holeCount; i++) {
+        // Draw border first (underneath), then hole on top
+        drawFigure(holes[i].borderFigure);
+        drawFigure(holes[i].holeFigure);
+    }
+}
+
+void checkAllGoals() {
+    for (int i = 0; i < ballCount; i++) {
+        for (int j = 0; j < holeCount; j++) {
+            int64_t goalResult = checkGoal(&holes[j], &balls[i]);
+            if (goalResult == 1) {
+                // Determine which player scored based on which ball went in
+                int winningPlayerId = i + 1; // Ball 0 = Player 1, Ball 1 = Player 2
+                Player* winningPlayer = getPlayerById(winningPlayerId);
+                
+                if (winningPlayer) {
+                    winningPlayer->score++;
+                    myprintf("LEVEL %d COMPLETE!\n", currentLevel);
+                    myprintf("Player %d WINS with ball in hole!\n", winningPlayerId);
+                    myprintf("Player %d total score: %d\n", winningPlayerId, winningPlayer->score);
+                    
+                    // Mark level as complete
+                    levelComplete = 1;
+                }
+                return; // Exit immediately when someone scores
+            }
+        }
+    }
+}
+
 void pongisInit(){
     setDrawBuffer(BACK_BUFFER);
 
-    // Example: Creating a single player using the new system
-    Figure playerFig, arrowFig;
-    PlayerControls singlePlayerControls = {'w', 'a', 'd', 's'};
-    Player singlePlayer = createPlayer((vec2d){0.5, 0.5}, 0x0000FF, 0xFF0000, singlePlayerControls, 1, &playerFig, &arrowFig);
-    addPlayer(singlePlayer);
-
-    // Add a light ball for testing using the new createBall function
-    Figure ballFig;
-    physicsEntity ball;
-    createBall((vec2d){0.3, 0.3}, 0x0000FF, &ballFig, &ball);
-    addEntity(&ball);
-
-    // Jugador 2
-    Figure playerFig2, arrowFig2;
-    PlayerControls Player2Controls = {'i', 'j', 'k', 'l'};
-    Player Player2 = createPlayer((vec2d){0.6, 0.5}, 0x00FF00, 0xF0F0000, Player2Controls, 2, &playerFig2, &arrowFig2);
-    addPlayer(Player2);
-
-    Figure ballFig2;
-    physicsEntity ball2;
-    createBall((vec2d){0.4, 0.3}, 0x00FF00, &ballFig2, &ball2);
-    addEntity(&ball2);
-
+    // Main game loop - continues until user quits
     while (1) {
-        clearScreen();
+        // Set up the current level before starting the frame loop
+        levelComplete = 0; // Reset level completion flag
         
-        // Handle input for the player
-        handlePlayerInput(&players[0]);
-        
-        // Update physics for all entities
-        checkCollisions(); // Handle collisions between all entities
-        updateEntities();
-        drawEntities();
+        // Load the appropriate level
+        if (currentLevel == 1) {
+            myprintf("Starting Level 1...\n");
+            setLevel1();
+        } else if (currentLevel == 2) {
+            myprintf("Starting Level 2...\n");
+            setLevel2();
+        } else {
+            // For levels 3+, cycle back to level 1 for now
+            myprintf("Starting Level %d (using Level 1 layout)...\n", currentLevel);
+            setLevel1();
+        }
 
-        if (isPressed('q') || isPressed('Q')) {
-            setDrawBuffer(FRONT_BUFFER);
+        // Frame loop - continues until level is complete
+        while (!levelComplete) {
             clearScreen();
-            myprintf("Exiting pongis...\n");
-            return;   
+            
+            // Draw holes first (so they appear underneath other entities)
+            drawHoles();
+            
+            // Handle input for both players
+            handlePlayerInput(&players[0]); // Player 1
+            if (playerCount > 1) {
+                handlePlayerInput(&players[1]); // Player 2
+            }
+            
+            // Update physics for all entities
+            checkCollisions(); // Handle collisions between all entities
+            updateEntities();
+            
+            // Draw all entities (players and balls)
+            drawEntities();
+            
+            // Check for goals
+            checkAllGoals();
+
+            // Check for quit input
+            if (isPressed('q') || isPressed('Q')) {
+                setDrawBuffer(FRONT_BUFFER);
+                clearScreen();
+                myprintf("Exiting pongis...\n");
+                return;   
+            }
+            
+            showBackBuffer();
         }
         
-        showBackBuffer();
+        // Level completed - wait for user input to continue or quit
+        myprintf("Press SPACE to continue to next level or Q to quit...\n");
+        
+        // Wait for player input to continue
+        int waitingForInput = 1;
+        while (waitingForInput) {
+            if (isPressed(' ')) {
+                currentLevel++;
+                waitingForInput = 0; // Exit waiting loop to start next level
+            } else if (isPressed('q') || isPressed('Q')) {
+                setDrawBuffer(FRONT_BUFFER);
+                clearScreen();
+                myprintf("Exiting pongis...\n");
+                return;
+            }
+        }
     }
 }
 

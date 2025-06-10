@@ -12,6 +12,8 @@
 
 #define DEFAULT_LINES 25
 
+#define DEFAULT_BG_COLOR 0xFFFFFF
+
 enum{
 	FRONT_BUFFER = 0,
 	BACK_BUFFER = 1
@@ -54,6 +56,7 @@ void newline(uint32_t bg_color);
 
 void backspace(uint32_t bgc);
 
+void changeBackgroundColor(uint32_t color);
 void clearScreen(uint32_t bg_color);
 
 void scrollUp(uint32_t bg_color);

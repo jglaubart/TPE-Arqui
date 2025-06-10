@@ -42,11 +42,13 @@ void zeroDivTest();
 void getRegisters(); 
 void sleep(uint64_t ticks);
 void getTime();
+void beep(uint64_t freq, uint64_t ticks);
 uint64_t getScreenWidth();
 uint64_t getScreenHeight();
 uint64_t isPressed(char c);
 void setDrawBuffer(int buffer);
 void showBackBuffer();
+void changeBackgroundColor(uint32_t color);
 
 double normalize_angle(double x);
 double sin_taylor(double x);

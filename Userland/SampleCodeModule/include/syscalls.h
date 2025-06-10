@@ -9,6 +9,7 @@ enum{
     SYS_CLEAR_ID = 2,
     SYS_TIME_ID = 3,
     SYS_SLEEP_ID = 4,
+    SYS_BEEP_ID = 5,
     SYS_CHANGE_FONT_SIZE = 10,
     SYS_GET_REGS_ID = 11,
     SYS_GET_SCREEN_WIDTH_ID = 12,
@@ -18,6 +19,7 @@ enum{
     SYS_IS_PRESSED_ID = 16,
     SYS_SHOW_BACK_BUFFER_ID = 17,
     SYS_SET_DRAW_BUFFER_ID = 18
+    SYS_CHANGE_BG_COLOR_ID = 19
 };
 
 enum{
