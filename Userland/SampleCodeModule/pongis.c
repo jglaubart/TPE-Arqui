@@ -161,15 +161,15 @@ void pongisInit(){
     addEntity(&ball);
 
     // Jugador 2
-    Figure playerFig, arrowFig;
-    PlayerControls singlePlayerControls = {'i', 'j', 'k', 'l'};
-    Player singlePlayer = createPlayer((vec2d){0.5, 0.5}, 0x00FF00, 0xFF0000, singlePlayerControls, 1, &playerFig, &arrowFig);
-    addPlayer(singlePlayer);
+    Figure playerFig2, arrowFig2;
+    PlayerControls Player2Controls = {'i', 'j', 'k', 'l'};
+    Player Player2 = createPlayer((vec2d){0.6, 0.5}, 0x00FF00, 0xF0F0000, Player2Controls, 2, &playerFig2, &arrowFig2);
+    addPlayer(Player2);
 
-    Figure ballFig;
-    physicsEntity ball;
-    createBall((vec2d){0.3, 0.3}, 0x00FF00, &ballFig, &ball);
-    addEntity(&ball);
+    Figure ballFig2;
+    physicsEntity ball2;
+    createBall((vec2d){0.4, 0.3}, 0x00FF00, &ballFig2, &ball2);
+    addEntity(&ball2);
 
     while (1) {
         clearScreen();
