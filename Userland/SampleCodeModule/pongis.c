@@ -77,7 +77,7 @@ void addPlayer(Player player) {
 }
 
 Hole* createHole(vec2d position, double radius, Figure* holeFig) {
-    uint32_t color = 0x000000; // Black color for the hole
+    uint32_t color = 0xFFFFFF; // White color for the hole
     vec2d topLeft = {position.x - radius, position.y - radius};
     vec2d bottomRight = {position.x + radius, position.y + radius};
     Hole* hole;
@@ -155,6 +155,17 @@ void pongisInit(){
     addPlayer(singlePlayer);
 
     // Add a light ball for testing using the new createBall function
+    Figure ballFig;
+    physicsEntity ball;
+    createBall((vec2d){0.3, 0.3}, 0x0000FF, &ballFig, &ball);
+    addEntity(&ball);
+
+    // Jugador 2
+    Figure playerFig, arrowFig;
+    PlayerControls singlePlayerControls = {'i', 'j', 'k', 'l'};
+    Player singlePlayer = createPlayer((vec2d){0.5, 0.5}, 0x00FF00, 0xFF0000, singlePlayerControls, 1, &playerFig, &arrowFig);
+    addPlayer(singlePlayer);
+
     Figure ballFig;
     physicsEntity ball;
     createBall((vec2d){0.3, 0.3}, 0x00FF00, &ballFig, &ball);

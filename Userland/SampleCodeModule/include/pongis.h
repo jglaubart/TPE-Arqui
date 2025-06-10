@@ -40,7 +40,6 @@ typedef struct {
 typedef struct {
     physicsEntity * ballEntity;
     int playerId;
-
 } Ball;
 typedef struct {
     vec2d position;
