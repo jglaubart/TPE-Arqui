@@ -12,7 +12,7 @@
 
 #define DEFAULT_LINES 25
 
-#define DEFAULT_BG_COLOR 0xFFFFFF
+#define DEFAULT_BG_COLOR 0x000000
 
 enum{
 	FRONT_BUFFER = 0,
@@ -38,13 +38,13 @@ void initVideoDriver();
  */
 void putPixel(uint32_t hexColor, uint64_t x, uint64_t y);
 
-void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color);
+void drawChar(Point topLeft, char c, uint32_t color);
 
-uint64_t putChar(char c, uint32_t color, uint32_t bg_color);
+uint64_t putChar(char c, uint32_t color);
 
-uint64_t putString(const char *string, uint32_t color, uint32_t bg_color);
+uint64_t putString(const char *string, uint32_t color);
 
-uint64_t putNString(const char *string, uint32_t color, uint32_t bg_color, uint64_t n);
+uint64_t putNString(const char *string, uint32_t color, uint64_t n);
 
 unsigned int isValidX(uint64_t x);
 unsigned int isValidY(uint64_t y);
@@ -52,14 +52,14 @@ unsigned int isValidY(uint64_t y);
 void resetX();
 void resetY();
 
-void newline(uint32_t bg_color);
+void newline();
 
-void backspace(uint32_t bgc);
+void backspace();
 
 void changeBackgroundColor(uint32_t color);
 void clearScreen();
 
-void scrollUp(uint32_t bg_color);
+void scrollUp();
 
 uint64_t getScreenWidth();
 uint64_t getScreenHeight();

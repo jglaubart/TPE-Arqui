@@ -94,7 +94,7 @@ void putPixel(uint32_t hexColor, uint64_t x, uint64_t y) {
     drawBuffer[offset+2] = (hexColor >> 16)& 0xFF;
 }
 
-void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color){
+void drawChar(Point topLeft, char c, uint32_t color){
 	for(int i = 0; i < desc->height * font_size; i++){
 		for(int j = 0; j < desc->width * font_size; j++){
 			int condition = desc->data[c * desc->height + i / font_size];
@@ -109,7 +109,7 @@ void drawChar(Point topLeft, char c, uint32_t color, uint32_t bg_color){
 	return;
 }
 
-uint64_t putChar(char c, uint32_t color, uint32_t bg_color){
+uint64_t putChar(char c, uint32_t color){
 	// font_name and unused_font_size are ignored now
 	// desc and font_size are used instead
 
@@ -117,49 +117,49 @@ uint64_t putChar(char c, uint32_t color, uint32_t bg_color){
 	// Otherwise, just ignore font_name and unused_font_size
 
 	if(isValidY(cursorPos.y + desc->height * font_size) == 0){
-		scrollUp(bg_color);
+		scrollUp();
 	}
 
 	if(isValidX(cursorPos.x + desc->width * font_size) == 0){
-		newline(bg_color);
+		newline();
 	}
 
 	if(c == '\n'){
-		newline(bg_color);
+		newline();
 		return 1;
 	}
 	if(c == '\b'){
-		backspace(bg_color);
+		backspace();
 		return 1;
 	}
 	if(c == '\t'){
 		for(int i = 0; i < 4; i++){
-			putChar(' ', color, bg_color);
+			putChar(' ', color);
 		}
 		return 1;
 	}
 	else{
-		drawChar(cursorPos, c, color, bg_color);
+		drawChar(cursorPos, c, color);
 		cursorPos.x += desc->width * font_size;
 	}
 
 	return 1;
 }
 
-uint64_t putString(const char *string, uint32_t color, uint32_t bg_color){
+uint64_t putString(const char *string, uint32_t color ){
 	int i = 0;
 	while(string[i] != 0){
-		putChar(string[i], color, bg_color);
+		putChar(string[i], color);
 		i++;
 	}
 	return 1;
 }
 
-uint64_t putNString(const char *string, uint32_t color, uint32_t bg_color, uint64_t n){
+uint64_t putNString(const char *string, uint32_t color, uint64_t n){
 	uint64_t res = 0;
 	int i = 0;
 	while(string[i] != 0 && i < n){
-		res += putChar(string[i], color, bg_color);
+		res += putChar(string[i], color);
 		i++;
 	}
 	return res;
@@ -185,15 +185,15 @@ unsigned int isValidY(uint64_t y){
 	return 1;
 }
 
-void newline(uint32_t bg_color){
+void newline(){
 	resetCursor_x();
 	cursorPos.y += desc->height * font_size;
 	if(isValidY(cursorPos.y + desc->height * font_size) == 0){
-		scrollUp(bg_color);
+		scrollUp();
 	}
 }
 
-void backspace(uint32_t bgc){
+void backspace(){
 	if (isValidX(cursorPos.x - desc->width * font_size)) {
 		cursorPos.x -= desc->width * font_size;
 	} else {
@@ -205,7 +205,7 @@ void backspace(uint32_t bgc){
 		}
 	}
 
-	drawChar(cursorPos, ' ', bgc, bgc);
+	drawChar(cursorPos, ' ', bg_color);
 }
 
 void changeBackgroundColor(uint32_t color){
@@ -222,7 +222,7 @@ void clearScreen(){
 	resetCursor_y();
 }
 
-void scrollUp(uint32_t bg_color) {
+void scrollUp() {
     if (!drawBuffer) return;
     uint64_t row_size    = VBE_mode_info->pitch * desc->height * font_size;
     uint64_t screen_size = bufferSize;

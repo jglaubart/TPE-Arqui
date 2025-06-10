@@ -388,6 +388,7 @@ void showBackBuffer() {
 
 void changeBackgroundColor(uint32_t color){
     sys_call(SYS_CHANGE_BG_COLOR_ID, color, 0, 0, 0);
+    clearScreen();
 }
 
 /**

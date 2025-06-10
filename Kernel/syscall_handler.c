@@ -69,7 +69,6 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
 uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){
     uint32_t default_color;
     char *default_font = "VGA8x16";
-    uint32_t default_bg_color = 0x000000;
     switch(fd){
         case(STDOUT):
             default_color = 0xFFFFFF;
@@ -85,7 +84,7 @@ uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){
             break;
     }
 
-    return putNString(buf, default_color, default_bg_color, default_font);
+    return putNString(buf, default_color, default_font);
 }
 
 uint64_t sys_read(uint64_t fd, char *buf, uint64_t count){

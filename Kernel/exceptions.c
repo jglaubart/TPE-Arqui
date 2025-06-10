@@ -26,14 +26,14 @@ void printRegisters(uint64_t *regs) {
 
 	// Imprimo los registros
 	for (int i = 0; i < 18; i++) {
-        putString(registerTitles[i], 0xFFFFFF, 0x000000); //
-        putString(" - ", 0xFFFFFF, 0x000000); 
+        putString(registerTitles[i], 0xFFFFFF); //
+        putString(" - ", 0xFFFFFF); 
         convertToHex(regs[i], buffer + 2);
-        putString(buffer, 0xFFFFFF, 0x000000);
+        putString(buffer, 0xFFFFFF);
         if (i % 4 == 3)
-            newline(0x000000);
+            newline();
         else
-            putString(" || ", 0xFFFFFF, 0x000000); 
+            putString(" || ", 0xFFFFFF); 
     }
     newline(0x000000);
 }
@@ -63,11 +63,11 @@ static void convertToHex(uint64_t number, char buffer[16]) {
 
 static void zero_division() {
 	// Handler para manejar excepcíon
-		putString("Zero division exception occurred.\n", 0xFFFFFF, 0x000000);
+		putString("Zero division exception occurred.\n", 0xFFFFFF);
 }
 
 static void invalid_opcode_exception() {
 	// Handler para manejar excepcíon
-	putString("Invalid opcode exception occurred.\n", 0xFFFFFF, 0x000000);
+	putString("Invalid opcode exception occurred.\n", 0xFFFFFF);
 }
 
