@@ -173,6 +173,14 @@ void resetCursor_y(){
 	cursorPos.y = 0 + Y_MARGIN;
 }
 
+uint64_t moveCursor(uint64_t x, uint64_t y){
+    if(!isValidX(x) || !isValidY(y))
+        return 0;
+    cursorPos.x = x;
+    cursorPos.y = y;
+    return 1;
+}
+
 unsigned int isValidX(uint64_t x){
 	if(x > (VBE_mode_info->width - X_MARGIN) || x < X_MARGIN)
 		return 0;

@@ -71,25 +71,31 @@ void updatePhysicsEntity(physicsEntity *e, double dt) {
     // X-axis
     if (e->hitbox) {
         Figure *f = e->hitbox;
-        if ((fix = (f->topLeft.x < 0.0 ? -f->topLeft.x : 
-                  (f->bottomRight.x > 1.0 ? 1.0 - f->bottomRight.x : 0))) != 0) {
+        fix = 0;
+        if (f->topLeft.x < 0.0) {
+            fix = -f->topLeft.x;
+        } else if (f->bottomRight.x > 1.0) {
+            fix = 1.0 - f->bottomRight.x;
+        }
+        if (fix != 0) {
             e->velocity.x = -e->velocity.x;
             for (size_t j = 0; j < e->shapeCount; ++j)
                 moveFigure(e->shapes[j], (vec2d){fix, 0});
-            // Also move the hitbox
-            moveFigure(e->hitbox, (vec2d){fix, 0});
         }
     }
     // Y-axis
     if (e->hitbox) {
         Figure *f = e->hitbox;
-        if ((fix = (f->topLeft.y < 0.0 ? -f->topLeft.y : 
-                  (f->bottomRight.y > 1.0 ? 1.0 - f->bottomRight.y : 0))) != 0) {
+        fix = 0;
+        if (f->topLeft.y < 0.0) {
+            fix = -f->topLeft.y;
+        } else if (f->bottomRight.y > 1.0) {
+            fix = 1.0 - f->bottomRight.y;
+        }
+        if (fix != 0) {
             e->velocity.y = -e->velocity.y;
             for (size_t j = 0; j < e->shapeCount; ++j)
                 moveFigure(e->shapes[j], (vec2d){0, fix});
-            // Also move the hitbox
-            moveFigure(e->hitbox, (vec2d){0, fix});
         }
     }
     // update entity position
