@@ -59,6 +59,7 @@ typedef struct {
 
 
 void pongisInit();
+void finishPongis();
 void pongisDraw();
 void pongisUpdate();
 void checkCollisions();

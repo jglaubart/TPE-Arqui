@@ -50,16 +50,6 @@ static void newLine(){
         puts("Command not found. Type 'help' for a list of available commands.\n");
     }else{
 	    (*commands_ptr[i])();
-		        if(strcmp(command, "golf") == 0){
-            // Limpiamos buffers antes de salir
-            for (int i = 0; line[i] != '\0' ; i++){
-                line[i] = 0;
-                command[i] = 0;
-                parameter[i] = 0;
-            }
-            linePos = 0;
-            return; // Esto hará que readInput() termine
-        }  //ejecutamos el comando
     }
 	for (int i = 0; line[i] != '\0' ; i++){ //limpiamos los buffers
 		line[i] = 0;

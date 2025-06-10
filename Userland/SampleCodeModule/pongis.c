@@ -90,8 +90,7 @@ void showGolfMenu() {
             break;
         }
         if (isPressed('q') || isPressed('Q')) {
-            setDrawBuffer(FRONT_BUFFER);
-            clearScreen();
+            finishPongis();
             myprintf("Saliendo de Pongis Golf...\n");
             return;
         }
@@ -467,8 +466,7 @@ void pongisInit(){
                     currentLevel = 1; // Restart from level 1
                     waitingForInput = 0;
                 } else if (isPressed('q') || isPressed('Q')) {
-                    setDrawBuffer(FRONT_BUFFER);
-                    clearScreen();
+                    finishPongis();
                     myprintf("Thanks for playing Pongis Golf!\n");
                     return;
                 }
@@ -505,9 +503,7 @@ void pongisInit(){
 
             // Check for quit input
             if (isPressed('q') || isPressed('Q')) {
-                setDrawBuffer(FRONT_BUFFER);
-                changeBackgroundColor(0x000000);
-                clearScreen();
+                finishPongis();
                 myprintf("Exiting pongis...\n");
                 return;   
             }
@@ -528,8 +524,7 @@ void pongisInit(){
                 currentLevel++;
                 waitingForInput = 0; // Exit waiting loop to start next level
             } else if (isPressed('q') || isPressed('Q')) {
-                setDrawBuffer(FRONT_BUFFER);
-                clearScreen();
+                finishPongis();
                 myprintf("Exiting pongis...\n");
                 return;
             }
@@ -557,4 +552,10 @@ void drawEntities() {
     for (int i = 0; i < entityCount; i++) {
         drawPhysicsEntity(entities[i]);
     }
+}
+
+void finishPongis() {
+    setDrawBuffer(FRONT_BUFFER);
+    changeBackgroundColor(0x000000);  // Black background
+    clearScreen();
 }
