@@ -15,6 +15,7 @@ static int playerCount = 0;
 static Hole holes[MAX_HOLES];
 static Figure holeFigures[MAX_HOLES];      // Black inner figures
 static Figure borderFigures[MAX_HOLES];    // White border figures
+static Figure holeHitboxes[MAX_HOLES];     // Hitbox figures for penetration calculations
 static int holeCount = 0;
 
 // Global storage for balls (separate from entities for goal checking)
@@ -26,6 +27,11 @@ static int ballCount = 0;
 // Game state variables
 static int currentLevel = 1;
 static int levelComplete = 0;
+static int numPlayers = 2; // Number of players (1 or 2)
+
+// Function pointer array for level setters (1-indexed, so index 0 is unused)
+static void (*levelSetters[4])() = {NULL, setLevel1, setLevel2, setLevel3};
+#define MAX_LEVELS 3
 
 
 #define MENU_BG_COLOR 0x228B22      // Verde (forest green)
@@ -75,12 +81,12 @@ void showGolfMenu() {
     while (1) {
         if (isPressed(' ')) {
             // Un jugador
-            setLevel1(); // O ajusta para modo 1 jugador
+            numPlayers = 1;
             break;
         }
         if (isPressed('2')) {
             // Multijugador
-            setLevel2(); // O ajusta para modo 2 jugadores
+            numPlayers = 2;
             break;
         }
         if (isPressed('q') || isPressed('Q')) {
@@ -121,10 +127,9 @@ Player createPlayer(vec2d center, uint32_t circleColor, uint32_t arrowColor, Pla
     Player player;
     
     // Initialize the physics entity with the provided figures
-    // We need both figures for shapes but only the circle for collision
+    // We need both figures for shapes but only the circle for hitbox
     Figure *shapes[] = {playerFig, arrowFig};
-    Figure *colliders[] = {playerFig};
-    initPhysicsEntity(&player.entity, shapes, 2, colliders, 1, ENTITY_HEAVY, 0.25, 1);
+    initPhysicsEntity(&player.entity, shapes, 2, playerFig, ENTITY_HEAVY, 0.25, 1);
     
     // Set player properties
     player.controls = controls;
@@ -141,8 +146,7 @@ physicsEntity* createBall(vec2d center, uint32_t color, Figure* ballFig, physics
     
     // Initialize the physics entity with the ball figure
     Figure *shapes[] = {ballFig};
-    Figure *colliders[] = {ballFig};
-    initPhysicsEntity(ballEntity, shapes, 1, colliders, 1, ENTITY_LIGHT, 0.1, 1);
+    initPhysicsEntity(ballEntity, shapes, 1, ballFig, ENTITY_LIGHT, 0.1, 1);
     
     return ballEntity;
 }
@@ -185,12 +189,21 @@ Hole* createHole(vec2d position, double radius, Figure* borderFig, Figure* holeF
     vec2d holeBottomRight = {position.x + radius, position.y + radius};
     newCircle(holeFig, holeTopLeft, holeBottomRight, holeColor);
     
+    // Create hitbox figure for penetration calculations
+    Figure* holeHitbox = &holeHitboxes[holeCount];
+    newCircle(holeHitbox, holeTopLeft, holeBottomRight, holeColor);
+    
     // Use the global holes array
     holes[holeCount].color = holeColor;
     holes[holeCount].position = position;
     holes[holeCount].radius = radius;
     holes[holeCount].borderFigure = borderFig;
     holes[holeCount].holeFigure = holeFig;
+    
+    // Initialize the hole's physics entity (non-collidable but with hitbox for penetration)
+    Figure *shapes[] = {borderFig, holeFig};
+    initPhysicsEntity(&holes[holeCount].holeEntity, shapes, 2, holeHitbox, ENTITY_HEAVY, 0.0, 0);
+    holes[holeCount].holeEntity.position = position;
     
     holeCount++;
     return &holes[holeCount - 1];
@@ -201,22 +214,11 @@ int64_t checkGoal(Hole* hole, physicsEntity* ball) {
         return -1;
     }
 
-    // Create a temporary physicsEntity representing the hole for penetration calculation
-    physicsEntity tempHole;
-    tempHole.position = hole->position;
-    
-    // Create a temporary figure for the hole with the correct radius
-    Figure tempFig;
-    tempFig.topLeft = (vec2d){hole->position.x - hole->radius, hole->position.y - hole->radius};
-    tempFig.bottomRight = (vec2d){hole->position.x + hole->radius, hole->position.y + hole->radius};
-    tempHole.colliders[0] = &tempFig;
-    tempHole.colliderCount = 1;
-    
-    // Calculate penetration depth using the modular function
-    double penetration = calculatePenetrationDepth(ball, &tempHole);
+    // Use the hole's physics entity for penetration calculation
+    double penetration = calculatePenetrationDepth(ball, &hole->holeEntity);
     
     // Ball scores if it's significantly inside the hole (> 50% penetration)
-    double ballRadius = (ball->colliders[0]->bottomRight.x - ball->colliders[0]->topLeft.x) * 0.5;
+    double ballRadius = (ball->hitbox->bottomRight.x - ball->hitbox->topLeft.x) * 0.5;
     double minPenetrationForGoal = ballRadius * 0.5; // Ball must be at least 50% inside
     
     return (penetration >= minPenetrationForGoal) ? 1 : 0;
@@ -278,11 +280,13 @@ void setLevel1() {
     Player player1 = createPlayer((vec2d){0.2, 0.5}, player1Color, arrowColor, player1Controls, 1, &player1Fig, &arrow1Fig);
     addPlayer(player1);
     
-    // Create Player 2 (right side)
-    static Figure player2Fig, arrow2Fig;
-    PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
-    Player player2 = createPlayer((vec2d){0.8, 0.5}, player2Color, arrowColor, player2Controls, 2, &player2Fig, &arrow2Fig);
-    addPlayer(player2);
+    // Create Player 2 only if multiplayer mode
+    if (numPlayers == 2) {
+        static Figure player2Fig, arrow2Fig;
+        PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
+        Player player2 = createPlayer((vec2d){0.8, 0.5}, player2Color, arrowColor, player2Controls, 2, &player2Fig, &arrow2Fig);
+        addPlayer(player2);
+    }
     
     // Create Ball 1 (for Player 1) - Same color as Player 1
     createBall((vec2d){0.3, 0.3}, ball1Color, &ballFigures[0], &ballEntities[0]);
@@ -291,15 +295,17 @@ void setLevel1() {
     addEntity(&ballEntities[0]);
     ballCount++;
     
-    // Create Ball 2 (for Player 2) - Same color as Player 2
-    createBall((vec2d){0.7, 0.7}, ball2Color, &ballFigures[1], &ballEntities[1]);
-    balls[1].ballEntity = &ballEntities[1];
-    balls[1].playerId = 2;
-    addEntity(&ballEntities[1]);
-    ballCount++;
+    // Create Ball 2 only if multiplayer mode
+    if (numPlayers == 2) {
+        createBall((vec2d){0.7, 0.7}, ball2Color, &ballFigures[1], &ballEntities[1]);
+        balls[1].ballEntity = &ballEntities[1];
+        balls[1].playerId = 2;
+        addEntity(&ballEntities[1]);
+        ballCount++;
+    }
     
-    // Create single hole - Level 1 has one hole in the center
-    double level1HoleRadius = 0.035; // Medium difficulty
+    // Create single hole - Level 1 has one hole in the center (largest/easiest)
+    double level1HoleRadius = 0.035; // Large hole = easiest difficulty
     createHole((vec2d){0.5, 0.5}, level1HoleRadius, &borderFigures[0], &holeFigures[0]);
 }
 
@@ -326,11 +332,13 @@ void setLevel2() {
     Player player1 = createPlayer((vec2d){0.15, 0.5}, player1Color, arrowColor, player1Controls, 1, &player1Fig, &arrow1Fig);
     addPlayer(player1);
     
-    // Create Player 2 (right side)
-    static Figure player2Fig, arrow2Fig;
-    PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
-    Player player2 = createPlayer((vec2d){0.85, 0.5}, player2Color, arrowColor, player2Controls, 2, &player2Fig, &arrow2Fig);
-    addPlayer(player2);
+    // Create Player 2 only if multiplayer mode
+    if (numPlayers == 2) {
+        static Figure player2Fig, arrow2Fig;
+        PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
+        Player player2 = createPlayer((vec2d){0.85, 0.5}, player2Color, arrowColor, player2Controls, 2, &player2Fig, &arrow2Fig);
+        addPlayer(player2);
+    }
     
     // Create Ball 1 (for Player 1) - Same color as Player 1
     createBall((vec2d){0.25, 0.3}, ball1Color, &ballFigures[0], &ballEntities[0]);
@@ -339,16 +347,70 @@ void setLevel2() {
     addEntity(&ballEntities[0]);
     ballCount++;
     
-    // Create Ball 2 (for Player 2) - Same color as Player 2
-    createBall((vec2d){0.75, 0.7}, ball2Color, &ballFigures[1], &ballEntities[1]);
-    balls[1].ballEntity = &ballEntities[1];
-    balls[1].playerId = 2;
-    addEntity(&ballEntities[1]);
+    // Create Ball 2 only if multiplayer mode
+    if (numPlayers == 2) {
+        createBall((vec2d){0.75, 0.7}, ball2Color, &ballFigures[1], &ballEntities[1]);
+        balls[1].ballEntity = &ballEntities[1];
+        balls[1].playerId = 2;
+        addEntity(&ballEntities[1]);
+        ballCount++;
+    }
+    
+    // Create single hole - Level 2 has one hole off-center (medium difficulty)
+    double level2HoleRadius = 0.03; // Medium hole = medium difficulty
+    createHole((vec2d){0.6, 0.3}, level2HoleRadius, &borderFigures[0], &holeFigures[0]);
+}
+
+void setLevel3() {
+    // Reset all arrays
+    entityCount = 0;
+    playerCount = 0;
+    holeCount = 0;
+    ballCount = 0;
+    
+    // Use consistent player and ball colors (same as previous levels)
+    uint32_t player1Color = PLAYER1_COLOR; // Red
+    uint32_t ball1Color = PLAYER1_COLOR;   // Red (same as player)
+    
+    uint32_t player2Color = PLAYER2_COLOR; // Green
+    uint32_t ball2Color = PLAYER2_COLOR;   // Green (same as player)
+    
+    // Arrow color for Level 3 (consistent across all levels)
+    uint32_t arrowColor = ARROW_COLOR; // Blue
+    
+    // Create Player 1 (left side, more challenging starting position)
+    static Figure player1Fig, arrow1Fig;
+    PlayerControls player1Controls = {'w', 'a', 'd', 's'};
+    Player player1 = createPlayer((vec2d){0.1, 0.2}, player1Color, arrowColor, player1Controls, 1, &player1Fig, &arrow1Fig);
+    addPlayer(player1);
+    
+    // Create Player 2 only if multiplayer mode
+    if (numPlayers == 2) {
+        static Figure player2Fig, arrow2Fig;
+        PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
+        Player player2 = createPlayer((vec2d){0.9, 0.8}, player2Color, arrowColor, player2Controls, 2, &player2Fig, &arrow2Fig);
+        addPlayer(player2);
+    }
+    
+    // Create Ball 1 (for Player 1) - Same color as Player 1
+    createBall((vec2d){0.2, 0.15}, ball1Color, &ballFigures[0], &ballEntities[0]);
+    balls[0].ballEntity = &ballEntities[0];
+    balls[0].playerId = 1;
+    addEntity(&ballEntities[0]);
     ballCount++;
     
-    // Create single hole - Level 2 has one hole off-center (harder)
-    double level2HoleRadius = 0.03; // Smaller hole = harder difficulty
-    createHole((vec2d){0.6, 0.3}, level2HoleRadius, &borderFigures[0], &holeFigures[0]);
+    // Create Ball 2 only if multiplayer mode
+    if (numPlayers == 2) {
+        createBall((vec2d){0.8, 0.85}, ball2Color, &ballFigures[1], &ballEntities[1]);
+        balls[1].ballEntity = &ballEntities[1];
+        balls[1].playerId = 2;
+        addEntity(&ballEntities[1]);
+        ballCount++;
+    }
+    
+    // Create single hole - Level 3 has one small hole (hardest difficulty)
+    double level3HoleRadius = 0.025; // Small hole = hardest difficulty
+    createHole((vec2d){0.4, 0.7}, level3HoleRadius, &borderFigures[0], &holeFigures[0]);
 }
 
 void drawHoles() {
@@ -374,8 +436,11 @@ int checkAllGoals() {
 
 void printWinner(int winningPlayerId) {
     myprintf("LEVEL %d COMPLETE!\n", currentLevel);
-    myprintf("Player %d WINS with ball in hole!\n", winningPlayerId);
-    myprintf("Press SPACE to continue to next level or Q to quit...\n");
+    if (numPlayers == 1) {
+        myprintf("Well done! Ball in hole!\n");
+    } else {
+        myprintf("Player %d WINS with ball in hole!\n", winningPlayerId);
+    }
 }
 
 void pongisInit(){
@@ -386,19 +451,32 @@ void pongisInit(){
         // Set up the current level before starting the frame loop
         levelComplete = 0; // Reset level completion flag
         
-        // Load the appropriate level
-        if (currentLevel == 1) {
-            myprintf("Starting Level 1...\n");
-            setLevel1();
-        } else if (currentLevel == 2) {
-            myprintf("Starting Level 2...\n");
-            setLevel2();
+        // Load the appropriate level using function pointer array
+        if (currentLevel >= 1 && currentLevel <= MAX_LEVELS) {
+            myprintf("Starting Level %d...\n", currentLevel);
+            levelSetters[currentLevel](); // Call the level setter function
         } else {
-            // For levels 3+, cycle back to level 1 for now
-            myprintf("Starting Level %d (using Level 1 layout)...\n", currentLevel);
-            setLevel1();
+            // Game completed after 3 levels
+            myprintf("Congratulations! You completed all %d levels!\n", MAX_LEVELS);
+            myprintf("Game completed! Press Q to quit or SPACE to restart from Level 1...\n");
+            
+            // Wait for restart or quit
+            int waitingForInput = 1;
+            while (waitingForInput) {
+                if (isPressed(' ')) {
+                    currentLevel = 1; // Restart from level 1
+                    waitingForInput = 0;
+                } else if (isPressed('q') || isPressed('Q')) {
+                    setDrawBuffer(FRONT_BUFFER);
+                    clearScreen();
+                    myprintf("Thanks for playing Pongis Golf!\n");
+                    return;
+                }
+            }
+            continue; // Skip the game loop and restart
         }
 
+        int winningPlayerId = 0;
         // Frame loop - continues until level is complete
         while (!levelComplete) {
             clearScreen();
@@ -420,9 +498,8 @@ void pongisInit(){
             drawEntities();
             
             // Check for goals
-            int winningPlayerId = checkAllGoals();
+            winningPlayerId = checkAllGoals();
             if (winningPlayerId > 0) {
-                printWinner(winningPlayerId);
                 levelComplete = 1;
             }
 
@@ -439,7 +516,10 @@ void pongisInit(){
         }
         
         // Level completed - wait for user input to continue or quit
+        clearScreen();
+        printWinner(winningPlayerId);
         myprintf("Press SPACE to continue to next level or Q to quit...\n");
+        showBackBuffer();
         
         // Wait for player input to continue
         int waitingForInput = 1;

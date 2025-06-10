@@ -9,7 +9,6 @@ char line[MAX_BUFFER+1] = {0};
 char parameter[MAX_BUFFER+1] = {0};
 char command[MAX_BUFFER+1] = {0};
 int linePos = 0;
-char lastc;
 
 static void newLine();
 static void readInput();
@@ -37,8 +36,9 @@ static void readInput(){
             } else if (c == '\n'){
                 newLine();
             }
-        }
-        lastc = c;
+		}else{
+			newLine();
+		}
     }
 }
 

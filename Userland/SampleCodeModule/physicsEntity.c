@@ -21,7 +21,7 @@ static vec2d vec2d_add(vec2d a, vec2d b) {
 
 void initPhysicsEntity(physicsEntity *e,
                        Figure **shapes, size_t shapeCount,
-                       Figure **colliders, size_t colliderCount,
+                       Figure *hitbox,
                        entityType type, double friction, int collidable)
 {
     e->position = (vec2d){0,0};
@@ -36,9 +36,7 @@ void initPhysicsEntity(physicsEntity *e,
     for (size_t i = 0; i < e->shapeCount; ++i)
         e->shapes[i] = shapes[i];
 
-    e->colliderCount = (colliderCount > MAX_ENTITY_COLLIDERS ? MAX_ENTITY_COLLIDERS : colliderCount);
-    for (size_t i = 0; i < e->colliderCount; ++i)
-        e->colliders[i] = colliders[i];
+    e->hitbox = hitbox;
 }
 
 void setVelocity(physicsEntity *e, vec2d v) {
@@ -68,33 +66,35 @@ void updatePhysicsEntity(physicsEntity *e, double dt) {
     for (size_t i = 0; i < e->shapeCount; ++i)
         moveFigure(e->shapes[i], disp);
 
-    // boundary bounce
+    // boundary bounce using hitbox
     double fix;
     // X-axis
-    for (size_t i = 0; i < e->colliderCount; ++i) {
-        Figure *f = e->colliders[i];
+    if (e->hitbox) {
+        Figure *f = e->hitbox;
         if ((fix = (f->topLeft.x < 0.0 ? -f->topLeft.x : 
                   (f->bottomRight.x > 1.0 ? 1.0 - f->bottomRight.x : 0))) != 0) {
             e->velocity.x = -e->velocity.x;
             for (size_t j = 0; j < e->shapeCount; ++j)
                 moveFigure(e->shapes[j], (vec2d){fix, 0});
-            break;
+            // Also move the hitbox
+            moveFigure(e->hitbox, (vec2d){fix, 0});
         }
     }
     // Y-axis
-    for (size_t i = 0; i < e->colliderCount; ++i) {
-        Figure *f = e->colliders[i];
+    if (e->hitbox) {
+        Figure *f = e->hitbox;
         if ((fix = (f->topLeft.y < 0.0 ? -f->topLeft.y : 
                   (f->bottomRight.y > 1.0 ? 1.0 - f->bottomRight.y : 0))) != 0) {
             e->velocity.y = -e->velocity.y;
             for (size_t j = 0; j < e->shapeCount; ++j)
                 moveFigure(e->shapes[j], (vec2d){0, fix});
-            break;
+            // Also move the hitbox
+            moveFigure(e->hitbox, (vec2d){0, fix});
         }
     }
     // update entity position
-    if (e->colliderCount > 0) {
-        Figure *f = e->colliders[0];
+    if (e->hitbox) {
+        Figure *f = e->hitbox;
         e->position.x = (f->topLeft.x + f->bottomRight.x) * 0.5;
         e->position.y = (f->topLeft.y + f->bottomRight.y) * 0.5;
     }
@@ -107,21 +107,21 @@ void drawPhysicsEntity(const physicsEntity *e) {
 }
 
 int circleCircleCollide(const physicsEntity *a, const physicsEntity *b) {
-    if (!a || !b || !a->collidable || !b->collidable) return 0;
+    if (!a || !b || !a->collidable || !b->collidable || !a->hitbox || !b->hitbox) return 0;
     double dx = a->position.x - b->position.x;
     double dy = a->position.y - b->position.y;
-    double r1 = (a->colliders[0]->bottomRight.x - a->colliders[0]->topLeft.x) * 0.5;
-    double r2 = (b->colliders[0]->bottomRight.x - b->colliders[0]->topLeft.x) * 0.5;
+    double r1 = (a->hitbox->bottomRight.x - a->hitbox->topLeft.x) * 0.5;
+    double r2 = (b->hitbox->bottomRight.x - b->hitbox->topLeft.x) * 0.5;
     double r = r1 + r2;
     return (dx*dx + dy*dy) <= (r*r);
 }
 
 double calculatePenetrationDepth(const physicsEntity *a, const physicsEntity *b) {
-    if (!a || !b) return 0.0;
+    if (!a || !b || !a->hitbox || !b->hitbox) return 0.0;
     
     // Calculate radii
-    double r1 = (a->colliders[0]->bottomRight.x - a->colliders[0]->topLeft.x) * 0.5;
-    double r2 = (b->colliders[0]->bottomRight.x - b->colliders[0]->topLeft.x) * 0.5;
+    double r1 = (a->hitbox->bottomRight.x - a->hitbox->topLeft.x) * 0.5;
+    double r2 = (b->hitbox->bottomRight.x - b->hitbox->topLeft.x) * 0.5;
     
     // Calculate distance between centers
     double distance = my_sqrt((b->position.x - a->position.x) * (b->position.x - a->position.x) + 
@@ -152,6 +152,8 @@ void resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restituti
             for (size_t i = 0; i < b->shapeCount; ++i) {
                 moveFigure(b->shapes[i], displacement);
             }
+            // Also move the hitbox
+            if (b->hitbox) moveFigure(b->hitbox, displacement);
             // Update ball position
             b->position = vec2d_add(b->position, displacement);
         } else if (a->type == ENTITY_LIGHT && b->type == ENTITY_HEAVY) {
@@ -160,6 +162,8 @@ void resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restituti
             for (size_t i = 0; i < a->shapeCount; ++i) {
                 moveFigure(a->shapes[i], displacement);
             }
+            // Also move the hitbox
+            if (a->hitbox) moveFigure(a->hitbox, displacement);
             // Update ball position
             a->position = vec2d_add(a->position, displacement);
         } else {
@@ -171,6 +175,9 @@ void resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restituti
             for (size_t i = 0; i < b->shapeCount; ++i) {
                 moveFigure(b->shapes[i], halfCorrection);
             }
+            // Also move the hitboxes
+            if (a->hitbox) moveFigure(a->hitbox, vec2d_scale(halfCorrection, -1));
+            if (b->hitbox) moveFigure(b->hitbox, halfCorrection);
             a->position = vec2d_add(a->position, vec2d_scale(halfCorrection, -1));
             b->position = vec2d_add(b->position, halfCorrection);
         }

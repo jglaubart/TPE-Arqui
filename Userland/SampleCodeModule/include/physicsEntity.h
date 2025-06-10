@@ -5,7 +5,6 @@
 #include "figures.h"
 
 #define MAX_ENTITY_SHAPES     4
-#define MAX_ENTITY_COLLIDERS  4
 
 typedef enum { ENTITY_LIGHT, ENTITY_HEAVY } entityType;
 
@@ -20,13 +19,12 @@ typedef struct {
 
     Figure    *shapes[MAX_ENTITY_SHAPES];
     size_t     shapeCount;
-    Figure    *colliders[MAX_ENTITY_COLLIDERS];
-    size_t     colliderCount;
+    Figure    *hitbox;        // Single figure for collision detection
 } physicsEntity;
 
 void initPhysicsEntity(physicsEntity *e,
                        Figure **shapes, size_t shapeCount,
-                       Figure **colliders, size_t colliderCount,
+                       Figure *hitbox,
                        entityType type, double friction, int collidable);
 void setVelocity(physicsEntity *e, vec2d v);
 void setAcceleration(physicsEntity *e, vec2d a);

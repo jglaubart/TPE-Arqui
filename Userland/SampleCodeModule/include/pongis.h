@@ -54,6 +54,7 @@ typedef struct {
     uint32_t color;
     Figure* borderFigure;
     Figure* holeFigure;
+    physicsEntity holeEntity;  // Physics entity for penetration calculations
 } Hole;
 
 
@@ -77,6 +78,7 @@ Player* getPlayerById(int playerId);
 // Level management functions  
 void setLevel1();
 void setLevel2();
+void setLevel3();
 void drawHoles();
 int checkAllGoals();
 void printWinner(int winningPlayerId);
