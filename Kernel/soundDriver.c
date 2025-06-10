@@ -25,8 +25,9 @@ void mute(){
     outp(0x61, tmp);
 }
 
-void beep(uint64_t freq, uint64_t ticks){
+void beep(uint64_t freq, uint64_t ms){
     playSound(freq);
+    uint64_t ticks = msToTicks(ms);
     sleep(ticks);
     mute();
 }

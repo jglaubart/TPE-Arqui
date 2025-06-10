@@ -16,4 +16,6 @@ int ticks_elapsed();
 int seconds_elapsed();
 void get_time(rtc_time_t *time);
 void sleep(uint32_t ticks);
+uint64_t msToTicks(uint64_t ms);
+
 #endif

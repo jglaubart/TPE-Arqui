@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <videoDriver.h>
 #include <lib.h>
+#include <interrupts.h>
 
 static unsigned long ticks = 0;
 static int frequency = 18;
@@ -34,8 +35,11 @@ int seconds_elapsed()
 void sleep(uint32_t ticksToWait)
 {
 	int ticksAtCallTime = ticks_elapsed();
-	while (ticks - ticksAtCallTime < ticksToWait)
-		;
+	_sti();
+	while (ticks - ticksAtCallTime < ticksToWait){
+		_hlt();
+	}
+	_cli();
 }
 void setTickFrequency(uint16_t freq)
 {
@@ -91,4 +95,9 @@ void get_time(rtc_time_t* time)
 		}
 		time->day = daysPerMonth[time->month - 1] + (time->month == 2) * isLeap(time->year);
 	}
+}
+
+uint64_t msToTicks(uint64_t ms)
+{
+	return (ms * frequency) / 1000;
 }

@@ -74,6 +74,7 @@ Player* getPlayerById(int playerId);
 void setLevel1();
 void setLevel2();
 void drawHoles();
-void checkAllGoals();
+int checkAllGoals();
+void printWinner(int winningPlayerId);
 
 #endif // PONGIS_H

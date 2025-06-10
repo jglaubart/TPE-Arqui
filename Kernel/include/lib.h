@@ -11,7 +11,7 @@ uint64_t getSeconds();
 uint64_t getMinutes();
 uint64_t getHours();
 
-uint8_t inp(uint8_t a);
-void outp(uint8_t a, uint8_t b);
+extern uint8_t inp(uint8_t a);
+extern void outp(uint8_t a, uint8_t b);
 
 #endif

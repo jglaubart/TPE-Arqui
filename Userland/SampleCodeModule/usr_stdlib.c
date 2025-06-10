@@ -206,7 +206,6 @@ void signed_num_to_str(int32_t num, char *buff){
 uint32_t unsigned_str_to_num(uint64_t *it, uint64_t buff_length, char *buff){
     uint32_t num = 0;
     uint64_t i = *it;
-    char debug[100];
     while (i < buff_length && buff[i] != ' ' && buff[i] != '\t')
     {
         num = num * 10 + (buff[i++] - '0');

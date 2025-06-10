@@ -18,8 +18,9 @@ static Figure borderFigures[MAX_HOLES];    // White border figures
 static int holeCount = 0;
 
 // Global storage for balls (separate from entities for goal checking)
-static physicsEntity balls[2]; // Max 2 balls (one per player)
+static Ball balls[2]; // Max 2 balls (one per player)
 static Figure ballFigures[2];
+static physicsEntity ballEntities[2]; // Physical entities for the balls
 static int ballCount = 0;
 
 // Game state variables
@@ -183,26 +184,41 @@ void setLevel1() {
     holeCount = 0;
     ballCount = 0;
     
+    // Player 1 and Ball 1 colors (Red)
+    uint32_t player1Color = 0xFF0000; // Red
+    uint32_t ball1Color = 0xFF0000;   // Red (same as player)
+    
+    // Player 2 and Ball 2 colors (Green)
+    uint32_t player2Color = 0x00FF00; // Green
+    uint32_t ball2Color = 0x00FF00;   // Green (same as player)
+    
+    // Arrow color (Blue for both players)
+    uint32_t arrowColor = 0x0000FF;   // Blue
+    
     // Create Player 1 (left side)
     static Figure player1Fig, arrow1Fig;
     PlayerControls player1Controls = {'w', 'a', 'd', 's'};
-    Player player1 = createPlayer((vec2d){0.2, 0.5}, 0xFF0000, 0x0000FF, player1Controls, 1, &player1Fig, &arrow1Fig);
+    Player player1 = createPlayer((vec2d){0.2, 0.5}, player1Color, arrowColor, player1Controls, 1, &player1Fig, &arrow1Fig);
     addPlayer(player1);
     
     // Create Player 2 (right side)
     static Figure player2Fig, arrow2Fig;
     PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
-    Player player2 = createPlayer((vec2d){0.8, 0.5}, 0x00FF00, 0x0000FF, player2Controls, 2, &player2Fig, &arrow2Fig);
+    Player player2 = createPlayer((vec2d){0.8, 0.5}, player2Color, arrowColor, player2Controls, 2, &player2Fig, &arrow2Fig);
     addPlayer(player2);
     
-    // Create Ball 1 (for Player 1)
-    createBall((vec2d){0.3, 0.3},  0xFF0000, &ballFigures[0], &balls[0]);
-    addEntity(&balls[0]);
+    // Create Ball 1 (for Player 1) - Same color as Player 1
+    createBall((vec2d){0.3, 0.3}, ball1Color, &ballFigures[0], &ballEntities[0]);
+    balls[0].ballEntity = &ballEntities[0];
+    balls[0].playerId = 1;
+    addEntity(&ballEntities[0]);
     ballCount++;
     
-    // Create Ball 2 (for Player 2)  
-    createBall((vec2d){0.7, 0.7}, 0x00FF00, &ballFigures[1], &balls[1]);
-    addEntity(&balls[1]);
+    // Create Ball 2 (for Player 2) - Same color as Player 2
+    createBall((vec2d){0.7, 0.7}, ball2Color, &ballFigures[1], &ballEntities[1]);
+    balls[1].ballEntity = &ballEntities[1];
+    balls[1].playerId = 2;
+    addEntity(&ballEntities[1]);
     ballCount++;
     
     // Create single hole - Level 1 has one hole in the center
@@ -217,26 +233,41 @@ void setLevel2() {
     holeCount = 0;
     ballCount = 0;
     
+    // Player 1 and Ball 1 colors (Blue)
+    uint32_t player1Color = 0x0000FF; // Blue
+    uint32_t ball1Color = 0x0000FF;   // Blue (same as player)
+    
+    // Player 2 and Ball 2 colors (Magenta/Purple)
+    uint32_t player2Color = 0xFF00FF; // Magenta
+    uint32_t ball2Color = 0xFF00FF;   // Magenta (same as player)
+    
+    // Arrow color (White for both players)
+    uint32_t arrowColor = 0xFFFFFF;   // White
+    
     // Create Player 1 (left side)
     static Figure player1Fig, arrow1Fig;
     PlayerControls player1Controls = {'w', 'a', 'd', 's'};
-    Player player1 = createPlayer((vec2d){0.15, 0.5}, 0x0000FF, 0xFF0000, player1Controls, 1, &player1Fig, &arrow1Fig);
+    Player player1 = createPlayer((vec2d){0.15, 0.5}, player1Color, arrowColor, player1Controls, 1, &player1Fig, &arrow1Fig);
     addPlayer(player1);
     
     // Create Player 2 (right side)
     static Figure player2Fig, arrow2Fig;
     PlayerControls player2Controls = {'i', 'j', 'l', 'k'};
-    Player player2 = createPlayer((vec2d){0.85, 0.5}, 0xFF0000, 0x0000FF, player2Controls, 2, &player2Fig, &arrow2Fig);
+    Player player2 = createPlayer((vec2d){0.85, 0.5}, player2Color, arrowColor, player2Controls, 2, &player2Fig, &arrow2Fig);
     addPlayer(player2);
     
-    // Create Ball 1 (for Player 1)
-    createBall((vec2d){0.25, 0.3}, 0x00FF00, &ballFigures[0], &balls[0]);
-    addEntity(&balls[0]);
+    // Create Ball 1 (for Player 1) - Same color as Player 1
+    createBall((vec2d){0.25, 0.3}, ball1Color, &ballFigures[0], &ballEntities[0]);
+    balls[0].ballEntity = &ballEntities[0];
+    balls[0].playerId = 1;
+    addEntity(&ballEntities[0]);
     ballCount++;
     
-    // Create Ball 2 (for Player 2)  
-    createBall((vec2d){0.75, 0.7}, 0x00FF00, &ballFigures[1], &balls[1]);
-    addEntity(&balls[1]);
+    // Create Ball 2 (for Player 2) - Same color as Player 2
+    createBall((vec2d){0.75, 0.7}, ball2Color, &ballFigures[1], &ballEntities[1]);
+    balls[1].ballEntity = &ballEntities[1];
+    balls[1].playerId = 2;
+    addEntity(&ballEntities[1]);
     ballCount++;
     
     // Create single hole - Level 2 has one hole off-center (harder)
@@ -252,26 +283,22 @@ void drawHoles() {
     }
 }
 
-void checkAllGoals() {
+int checkAllGoals() {
     for (int i = 0; i < ballCount; i++) {
         for (int j = 0; j < holeCount; j++) {
-            int64_t goalResult = checkGoal(&holes[j], &balls[i]);
+            int64_t goalResult = checkGoal(&holes[j], balls[i].ballEntity);
             if (goalResult == 1) {
-                // Determine which player scored based on which ball went in
-                int winningPlayerId = i + 1; // Ball 0 = Player 1, Ball 1 = Player 2
-                Player* winningPlayer = getPlayerById(winningPlayerId);
-                
-                if (winningPlayer) {
-                    myprintf("LEVEL %d COMPLETE!\n", currentLevel);
-                    myprintf("Player %d WINS with ball in hole!\n", winningPlayerId);
-                    
-                    // Mark level as complete
-                    levelComplete = 1;
-                }
-                return; // Exit immediately when someone scores
+                // Return the player ID of the ball that went in the hole
+                return balls[i].playerId;
             }
         }
     }
+    return 0; // No goal scored
+}
+
+void printWinner(int winningPlayerId) {
+    myprintf("LEVEL %d COMPLETE!\n", currentLevel);
+    myprintf("Player %d WINS with ball in hole!\n", winningPlayerId);
 }
 
 void pongisInit(){
@@ -316,7 +343,11 @@ void pongisInit(){
             drawEntities();
             
             // Check for goals
-            checkAllGoals();
+            int winningPlayerId = checkAllGoals();
+            if (winningPlayerId > 0) {
+                printWinner(winningPlayerId);
+                levelComplete = 1;
+            }
 
             // Check for quit input
             if (isPressed('q') || isPressed('Q')) {

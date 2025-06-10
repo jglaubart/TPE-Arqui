@@ -101,8 +101,8 @@ uint64_t sys_clear(){
     return 0;
 }
 
-uint64_t sys_beep(uint64_t freq, uint64_t ticks){
-    beep(freq, ticks);
+uint64_t sys_beep(uint64_t freq, uint64_t ms){
+    beep(freq, ms);
     return 0;
 }
 
