@@ -196,28 +196,30 @@ Hole* createHole(vec2d position, double radius, Figure* borderFig, Figure* holeF
     return &holes[holeCount - 1];
 }
 
-uint64_t isInGoalPosition(vec2d holePosition, double radius, vec2d ballPosition) {
-    // Calculate the distance from the ball to the hole center
-    double dx = ballPosition.x - holePosition.x;
-    double dy = ballPosition.y - holePosition.y;
-    double distanceSquared = dx * dx + dy * dy;
-    
-    // Check if the distance is less than or equal to the radius squared
-    return (distanceSquared <= radius * radius);
-}
-
 int64_t checkGoal(Hole* hole, physicsEntity* ball) {
     if(!ball || !hole || !hole->holeFigure){
         return -1;
     }
 
-    // Check if the ball is within the hole's radius
-    if(isInGoalPosition(hole->position, hole->radius, ball->position)) {
-        // Ball is in the hole
-        return 1; // Goal scored
-    }
+    // Create a temporary physicsEntity representing the hole for penetration calculation
+    physicsEntity tempHole;
+    tempHole.position = hole->position;
     
-    return 0; // No goal    
+    // Create a temporary figure for the hole with the correct radius
+    Figure tempFig;
+    tempFig.topLeft = (vec2d){hole->position.x - hole->radius, hole->position.y - hole->radius};
+    tempFig.bottomRight = (vec2d){hole->position.x + hole->radius, hole->position.y + hole->radius};
+    tempHole.colliders[0] = &tempFig;
+    tempHole.colliderCount = 1;
+    
+    // Calculate penetration depth using the modular function
+    double penetration = calculatePenetrationDepth(ball, &tempHole);
+    
+    // Ball scores if it's significantly inside the hole (> 50% penetration)
+    double ballRadius = (ball->colliders[0]->bottomRight.x - ball->colliders[0]->topLeft.x) * 0.5;
+    double minPenetrationForGoal = ballRadius * 0.5; // Ball must be at least 50% inside
+    
+    return (penetration >= minPenetrationForGoal) ? 1 : 0;
 }
 
 void handlePlayerInput(Player* player) {
@@ -260,16 +262,15 @@ void setLevel1() {
     holeCount = 0;
     ballCount = 0;
     
-    // Player 1 and Ball 1 colors (Red)
-    uint32_t player1Color = 0xFF0000; // Red
-    uint32_t ball1Color = 0xFF0000;   // Red (same as player)
+    // Use consistent player and ball colors
+    uint32_t player1Color = PLAYER1_COLOR; // Red
+    uint32_t ball1Color = PLAYER1_COLOR;   // Red (same as player)
     
-    // Player 2 and Ball 2 colors (Green)
-    uint32_t player2Color = 0x00FF00; // Green
-    uint32_t ball2Color = 0x00FF00;   // Green (same as player)
+    uint32_t player2Color = PLAYER2_COLOR; // Green
+    uint32_t ball2Color = PLAYER2_COLOR;   // Green (same as player)
     
-    // Arrow color (Blue for both players)
-    uint32_t arrowColor = 0x0000FF;   // Blue
+    // Arrow color for Level 1 (consistent across all levels)
+    uint32_t arrowColor = ARROW_COLOR; // Blue
     
     // Create Player 1 (left side)
     static Figure player1Fig, arrow1Fig;
@@ -309,16 +310,15 @@ void setLevel2() {
     holeCount = 0;
     ballCount = 0;
     
-    // Player 1 and Ball 1 colors (Blue)
-    uint32_t player1Color = 0x0000FF; // Blue
-    uint32_t ball1Color = 0x0000FF;   // Blue (same as player)
+    // Use consistent player and ball colors (same as Level 1)
+    uint32_t player1Color = PLAYER1_COLOR; // Red
+    uint32_t ball1Color = PLAYER1_COLOR;   // Red (same as player)
     
-    // Player 2 and Ball 2 colors (Magenta/Purple)
-    uint32_t player2Color = 0xFF00FF; // Magenta
-    uint32_t ball2Color = 0xFF00FF;   // Magenta (same as player)
+    uint32_t player2Color = PLAYER2_COLOR; // Green
+    uint32_t ball2Color = PLAYER2_COLOR;   // Green (same as player)
     
-    // Arrow color (White for both players)
-    uint32_t arrowColor = 0xFFFFFF;   // White
+    // Arrow color for Level 2 (consistent across all levels)
+    uint32_t arrowColor = ARROW_COLOR; // Blue
     
     // Create Player 1 (left side)
     static Figure player1Fig, arrow1Fig;

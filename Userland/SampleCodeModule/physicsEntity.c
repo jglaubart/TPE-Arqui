@@ -116,13 +116,72 @@ int circleCircleCollide(const physicsEntity *a, const physicsEntity *b) {
     return (dx*dx + dy*dy) <= (r*r);
 }
 
+double calculatePenetrationDepth(const physicsEntity *a, const physicsEntity *b) {
+    if (!a || !b) return 0.0;
+    
+    // Calculate radii
+    double r1 = (a->colliders[0]->bottomRight.x - a->colliders[0]->topLeft.x) * 0.5;
+    double r2 = (b->colliders[0]->bottomRight.x - b->colliders[0]->topLeft.x) * 0.5;
+    
+    // Calculate distance between centers
+    double distance = my_sqrt((b->position.x - a->position.x) * (b->position.x - a->position.x) + 
+                             (b->position.y - a->position.y) * (b->position.y - a->position.y));
+    
+    // Calculate penetration depth (0 if not overlapping)
+    double penetration = (r1 + r2) - distance;
+    return (penetration > 0) ? penetration : 0.0;
+}
+
 void resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restitution) {
     if (!circleCircleCollide(a,b)) return;
+    
+    // Calculate collision normal (from a to b)
     vec2d n = vec2d_normalize((vec2d){b->position.x - a->position.x, b->position.y - a->position.y});
+    
+    // Calculate penetration depth using the modular function
+    double penetration = calculatePenetrationDepth(a, b);
+    
+    // Positional correction to separate overlapping objects
+    if (penetration > 0) {
+        double correction = penetration * 0.6; // 60% correction to avoid jitter
+        vec2d correctionVector = vec2d_scale(n, correction);
+        
+        if (a->type == ENTITY_HEAVY && b->type == ENTITY_LIGHT) {
+            // Only move the light entity (ball)
+            vec2d displacement = correctionVector;
+            for (size_t i = 0; i < b->shapeCount; ++i) {
+                moveFigure(b->shapes[i], displacement);
+            }
+            // Update ball position
+            b->position = vec2d_add(b->position, displacement);
+        } else if (a->type == ENTITY_LIGHT && b->type == ENTITY_HEAVY) {
+            // Only move the light entity (ball)
+            vec2d displacement = vec2d_scale(correctionVector, -1);
+            for (size_t i = 0; i < a->shapeCount; ++i) {
+                moveFigure(a->shapes[i], displacement);
+            }
+            // Update ball position
+            a->position = vec2d_add(a->position, displacement);
+        } else {
+            // Both same type - move both entities equally
+            vec2d halfCorrection = vec2d_scale(correctionVector, 0.5);
+            for (size_t i = 0; i < a->shapeCount; ++i) {
+                moveFigure(a->shapes[i], vec2d_scale(halfCorrection, -1));
+            }
+            for (size_t i = 0; i < b->shapeCount; ++i) {
+                moveFigure(b->shapes[i], halfCorrection);
+            }
+            a->position = vec2d_add(a->position, vec2d_scale(halfCorrection, -1));
+            b->position = vec2d_add(b->position, halfCorrection);
+        }
+    }
+    
+    // Velocity resolution (existing physics)
     double va_n = vec2d_dot(a->velocity, n);
     double vb_n = vec2d_dot(b->velocity, n);
     double dA = vb_n - va_n;
     double dB = va_n - vb_n;
+    
     if (a->type == ENTITY_HEAVY && b->type == ENTITY_LIGHT) {
         b->velocity = vec2d_add(b->velocity, vec2d_scale(n, dB*(1+restitution)));
         return;

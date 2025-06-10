@@ -22,21 +22,26 @@
 
 // Note: Hole radius is not fixed - it varies by level and is passed as parameter to createHole()
 
+// Player and ball color definitions (consistent across all levels)
+#define PLAYER1_COLOR 0xFF0000    // Red for Player 1
+#define PLAYER2_COLOR 0x00FF00    // Green for Player 2
+#define ARROW_COLOR 0x0000FF      // Blue arrows for all levels (consistent)
+
 /* typedef struct{
     physicsEntity * entity;
 } player; */
 
 typedef struct {
-    char forward;   // e.g., 'w' for player 1
-    char left;      // e.g., 'a' for player 1
-    char right;     // e.g., 'd' for player 1
-    char backward;  // e.g., 's' for player 1
+    char forward;
+    char left;
+    char right;
+    char backward;
 } PlayerControls;
 
 typedef struct {
-    physicsEntity entity;    // The physics entity (circle + arrow)
-    PlayerControls controls; // Input controls for this player
-    int playerId;           // Unique identifier for the player
+    physicsEntity entity;
+    PlayerControls controls;
+    int playerId;
 } Player;
 
 typedef struct {
@@ -46,9 +51,9 @@ typedef struct {
 typedef struct {
     vec2d position;
     double radius;
-    uint32_t color; // Color of the hole
-    Figure* borderFigure; // Pointer to the white border figure
-    Figure* holeFigure;   // Pointer to the black hole figure
+    uint32_t color;
+    Figure* borderFigure;
+    Figure* holeFigure;
 } Hole;
 
 
@@ -61,7 +66,6 @@ void drawEntities();
 Player createPlayer(vec2d center, uint32_t circleColor, uint32_t arrowColor, PlayerControls controls, int playerId, Figure* playerFig, Figure* arrowFig);
 physicsEntity* createBall(vec2d center, uint32_t color, Figure* ballFig, physicsEntity* ballEntity);
 Hole* createHole(vec2d position, double radius, Figure* borderFig, Figure* holeFig);
-uint64_t isInGoalPosition(vec2d holePosition, double radius, vec2d ballPosition);
 int64_t checkGoal(Hole* hole, physicsEntity* ball);
 void addEntity(physicsEntity* entity);
 

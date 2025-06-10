@@ -33,6 +33,7 @@ void setAcceleration(physicsEntity *e, vec2d a);
 void updatePhysicsEntity(physicsEntity *e, double dt);
 void drawPhysicsEntity(const physicsEntity *e);
 int  circleCircleCollide(const physicsEntity *a, const physicsEntity *b);
+double calculatePenetrationDepth(const physicsEntity *a, const physicsEntity *b);
 void resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restitution);
 void rotateEntity(physicsEntity * e, double angleOffset);
 #endif // PHYSICSENTITY_H
