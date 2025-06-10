@@ -535,7 +535,9 @@ void pongisInit(){
 void checkCollisions() {
     for (int i = 0; i < entityCount; i++) {
         for (int j = i + 1; j < entityCount; j++) {
-            resolveCollisionSimple(entities[i], entities[j], RESTITUTION);
+            if(resolveCollisionSimple(entities[i], entities[j], RESTITUTION)){
+                beep(1000, 100);
+            }
         }
     }
 }

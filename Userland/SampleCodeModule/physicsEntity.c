@@ -132,8 +132,8 @@ double calculatePenetrationDepth(const physicsEntity *a, const physicsEntity *b)
     return (penetration > 0) ? penetration : 0.0;
 }
 
-void resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restitution) {
-    if (!circleCircleCollide(a,b)) return;
+int resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restitution) {
+    if (!circleCircleCollide(a,b)) return 0;
     
     // Calculate collision normal (from a to b)
     vec2d n = vec2d_normalize((vec2d){b->position.x - a->position.x, b->position.y - a->position.y});
@@ -191,15 +191,16 @@ void resolveCollisionSimple(physicsEntity *a, physicsEntity *b, double restituti
     
     if (a->type == ENTITY_HEAVY && b->type == ENTITY_LIGHT) {
         b->velocity = vec2d_add(b->velocity, vec2d_scale(n, dB*(1+restitution)));
-        return;
+        return 1;
     }
     if (a->type == ENTITY_LIGHT && b->type == ENTITY_HEAVY) {
         a->velocity = vec2d_add(a->velocity, vec2d_scale(n, dA*(1+restitution)));
-        return;
+        return 1;
     }
     
     a->velocity = vec2d_add(a->velocity, vec2d_scale(n, dA*(1+restitution)));
     b->velocity = vec2d_add(b->velocity, vec2d_scale(n, dB*(1+restitution)));
+    return 1;
 }
 
 void rotateEntity(physicsEntity * e, double angleOffset){
