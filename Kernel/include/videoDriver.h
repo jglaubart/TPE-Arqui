@@ -57,7 +57,7 @@ void newline(uint32_t bg_color);
 void backspace(uint32_t bgc);
 
 void changeBackgroundColor(uint32_t color);
-void clearScreen(uint32_t bg_color);
+void clearScreen();
 
 void scrollUp(uint32_t bg_color);
 
