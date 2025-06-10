@@ -27,6 +27,82 @@ static int ballCount = 0;
 static int currentLevel = 1;
 static int levelComplete = 0;
 
+
+#define MENU_BG_COLOR 0x228B22      // Verde (forest green)
+#define MENU_RECT_COLOR 0xFFFDD0    // Crema
+#define MENU_TEXT_COLOR 0x000000    // Negro
+
+void showGolfMenu() {
+    int screenW = getScreenWidth();
+    int screenH = getScreenHeight();
+
+    // Limpiar fondo verde
+    setDrawBuffer(BACK_BUFFER);
+    changeBackgroundColor(MENU_BG_COLOR);
+
+    // Dimensiones del rectángulo central
+    int rectW = screenW / 2;
+    int rectH = screenH / 2;
+    int rectX = (screenW - rectW) / 2;
+    int rectY = (screenH - rectH) / 2;
+
+    // Dibujar rectángulo crema
+    int64_t corners[4][2] = {
+        {rectX, rectY},
+        {rectX + rectW, rectY},
+        {rectX + rectW, rectY + rectH},
+        {rectX, rectY + rectH}
+    };
+    sys_call(SYS_DRAW_RECTANGLE_ID, corners, MENU_RECT_COLOR, 0, 0);
+
+    // Mensajes
+    char *title = "PONGIS GOLF";
+    char *opt1 = "1 - Un jugador";
+    char *opt2 = "2 - Multijugador";
+    char *optq = "Q - Salir";
+
+    int textY = rectY + rectH / 4;
+    int lineSpacing = 32;
+
+  /*   drawStringCentered(title, screenW / 2, textY, MENU_TEXT_COLOR);
+    drawStringCentered(opt1, screenW / 2, textY + lineSpacing, MENU_TEXT_COLOR);
+    drawStringCentered(opt2, screenW / 2, textY + 2 * lineSpacing, MENU_TEXT_COLOR);
+    drawStringCentered(optq, screenW / 2, textY + 3 * lineSpacing, MENU_TEXT_COLOR);
+ */
+    showBackBuffer();
+
+    // Esperar input
+    while (1) {
+        if (isPressed(' ')) {
+            // Un jugador
+            setLevel1(); // O ajusta para modo 1 jugador
+            break;
+        }
+        if (isPressed('2')) {
+            // Multijugador
+            setLevel2(); // O ajusta para modo 2 jugadores
+            break;
+        }
+        if (isPressed('q') || isPressed('Q')) {
+            setDrawBuffer(FRONT_BUFFER);
+            clearScreen();
+            myprintf("Saliendo de Pongis Golf...\n");
+            return;
+        }
+    }
+}
+
+// Función auxiliar para centrar texto (debes implementarla si no existe)
+/* void drawStringCentered(const char *str, int centerX, int y, uint32_t color) {
+    int textW = strlen(str) * 8; // 8 px por char (ajusta si tu fuente es distinta)
+    int x = centerX - textW / 2;
+    drawString(str, x, y, color);
+} */
+
+
+
+
+
 Player createPlayer(vec2d center, uint32_t circleColor, uint32_t arrowColor, PlayerControls controls, int playerId, Figure* playerFig, Figure* arrowFig) {
     // Create the circle figure (player body)
     vec2d circleTopLeft = {center.x - PLAYER_RADIUS, center.y - PLAYER_RADIUS};
@@ -299,11 +375,12 @@ int checkAllGoals() {
 void printWinner(int winningPlayerId) {
     myprintf("LEVEL %d COMPLETE!\n", currentLevel);
     myprintf("Player %d WINS with ball in hole!\n", winningPlayerId);
+    myprintf("Press SPACE to continue to next level or Q to quit...\n");
 }
 
 void pongisInit(){
     setDrawBuffer(BACK_BUFFER);
-
+    showGolfMenu();
     // Main game loop - continues until user quits
     while (1) {
         // Set up the current level before starting the frame loop
@@ -352,6 +429,7 @@ void pongisInit(){
             // Check for quit input
             if (isPressed('q') || isPressed('Q')) {
                 setDrawBuffer(FRONT_BUFFER);
+                changeBackgroundColor(0x000000);
                 clearScreen();
                 myprintf("Exiting pongis...\n");
                 return;   
