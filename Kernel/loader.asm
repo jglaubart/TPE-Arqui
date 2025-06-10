@@ -1,5 +1,6 @@
 global loader
 global reset
+global hang
 
 extern getStackBase
 extern main

@@ -52,7 +52,6 @@ Player createPlayer(vec2d center, uint32_t circleColor, uint32_t arrowColor, Pla
     // Set player properties
     player.controls = controls;
     player.playerId = playerId;
-    player.score = 0;
     
     return player;
 }
@@ -263,10 +262,8 @@ void checkAllGoals() {
                 Player* winningPlayer = getPlayerById(winningPlayerId);
                 
                 if (winningPlayer) {
-                    winningPlayer->score++;
                     myprintf("LEVEL %d COMPLETE!\n", currentLevel);
                     myprintf("Player %d WINS with ball in hole!\n", winningPlayerId);
-                    myprintf("Player %d total score: %d\n", winningPlayerId, winningPlayer->score);
                     
                     // Mark level as complete
                     levelComplete = 1;

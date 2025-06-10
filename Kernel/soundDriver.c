@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <rtc_time.h>
 #include <soundDriver.h>
+#include <lib.h>
 
 void playSound(uint64_t frequence){
     uint64_t Div;

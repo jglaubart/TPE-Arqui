@@ -1,4 +1,4 @@
-#include <time.h>
+#include <rtc_time.h>
 #include <stdint.h>
 #include "keyboardDriver.h"
 

@@ -3,7 +3,6 @@
 #include "keyboardDriver.h"
 #include <rtc_time.h>
 #include "lib.h"
-#include <time.h>
 #include <soundDriver.h>
 
 #define REGISTERS 18

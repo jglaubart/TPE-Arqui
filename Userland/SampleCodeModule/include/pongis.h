@@ -37,7 +37,6 @@ typedef struct {
     physicsEntity entity;    // The physics entity (circle + arrow)
     PlayerControls controls; // Input controls for this player
     int playerId;           // Unique identifier for the player
-    int score;              // Player's current score
 } Player;
 
 typedef struct {

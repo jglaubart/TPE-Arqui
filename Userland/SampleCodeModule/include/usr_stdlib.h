@@ -49,6 +49,7 @@ uint64_t isPressed(char c);
 void setDrawBuffer(int buffer);
 void showBackBuffer();
 void changeBackgroundColor(uint32_t color);
+void clearScreen();
 
 double normalize_angle(double x);
 double sin_taylor(double x);

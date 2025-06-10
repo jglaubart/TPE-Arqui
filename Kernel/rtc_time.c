@@ -1,6 +1,8 @@
 #include <rtc_time.h>
 #include <stdint.h>
 #include <videoDriver.h>
+#include <lib.h>
+
 static unsigned long ticks = 0;
 static int frequency = 18;
 
