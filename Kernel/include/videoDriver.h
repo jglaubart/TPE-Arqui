@@ -48,7 +48,7 @@ uint64_t putNString(const char *string, uint32_t color, uint64_t n);
 
 unsigned int isValidX(uint64_t x);
 unsigned int isValidY(uint64_t y);
-
+uint64_t moveCursor(uint64_t x, uint64_t y);
 void resetX();
 void resetY();
 

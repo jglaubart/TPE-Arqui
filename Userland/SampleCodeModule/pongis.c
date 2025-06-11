@@ -34,52 +34,31 @@ static void (*levelSetters[4])() = {NULL, setLevel1, setLevel2, setLevel3};
 #define MAX_LEVELS 3
 
 
-#define MENU_BG_COLOR 0x228B22      // Verde (forest green)
+#define MENU_BG_COLOR 0x24892F      // Verde oscuro
+#define GAME_BG_COLOR 0x228B22      // Verde
 #define MENU_RECT_COLOR 0xFFFDD0    // Crema
-#define MENU_TEXT_COLOR 0x000000    // Negro
+#define MENU_TEXT_COLOR 0x083E13    // Negro
 
 void showGolfMenu() {
-    int screenW = getScreenWidth();
-    int screenH = getScreenHeight();
-
     // Limpiar fondo verde
     setDrawBuffer(BACK_BUFFER);
     changeBackgroundColor(MENU_BG_COLOR);
+    
+    changeFontSize(4);
+    putsColored("Mini Pongis Golf\n",0xFFD700 );
+    changeFontSize(2);
+    putsColored("Selecciona el modo de juego:\n", MENU_TEXT_COLOR);
+    putsColored("1 - Un jugador\n", MENU_TEXT_COLOR);
+    putsColored("2 - Multijugador\n", MENU_TEXT_COLOR);
+    putsColored("Q - Salir\n", MENU_TEXT_COLOR);
+    changeFontSize(0);
 
-    // Dimensiones del rectángulo central
-    int rectW = screenW / 2;
-    int rectH = screenH / 2;
-    int rectX = (screenW - rectW) / 2;
-    int rectY = (screenH - rectH) / 2;
 
-    // Dibujar rectángulo crema
-    int64_t corners[4][2] = {
-        {rectX, rectY},
-        {rectX + rectW, rectY},
-        {rectX + rectW, rectY + rectH},
-        {rectX, rectY + rectH}
-    };
-    sys_call(SYS_DRAW_RECTANGLE_ID, corners, MENU_RECT_COLOR, 0, 0);
-
-    // Mensajes
-    char *title = "PONGIS GOLF";
-    char *opt1 = "1 - Un jugador";
-    char *opt2 = "2 - Multijugador";
-    char *optq = "Q - Salir";
-
-    int textY = rectY + rectH / 4;
-    int lineSpacing = 32;
-
-  /*   drawStringCentered(title, screenW / 2, textY, MENU_TEXT_COLOR);
-    drawStringCentered(opt1, screenW / 2, textY + lineSpacing, MENU_TEXT_COLOR);
-    drawStringCentered(opt2, screenW / 2, textY + 2 * lineSpacing, MENU_TEXT_COLOR);
-    drawStringCentered(optq, screenW / 2, textY + 3 * lineSpacing, MENU_TEXT_COLOR);
- */
     showBackBuffer();
 
     // Esperar input
     while (1) {
-        if (isPressed(' ')) {
+        if (isPressed('1')) {
             // Un jugador
             numPlayers = 1;
             break;
@@ -95,15 +74,78 @@ void showGolfMenu() {
             return;
         }
     }
+    changeBackgroundColor(GAME_BG_COLOR);
 }
 
-// Función auxiliar para centrar texto (debes implementarla si no existe)
-/* void drawStringCentered(const char *str, int centerX, int y, uint32_t color) {
-    int textW = strlen(str) * 8; // 8 px por char (ajusta si tu fuente es distinta)
-    int x = centerX - textW / 2;
-    drawString(str, x, y, color);
-} */
+void showLevelCompleteMenu(int winningPlayerId) {
+    // Limpiar fondo verde
+    setDrawBuffer(BACK_BUFFER);
+    changeBackgroundColor(MENU_BG_COLOR);
+    
+    changeFontSize(4);
+    putsColored("Nivel completado!\n", 0xFFD700);
+    changeFontSize(2);
+    if(numPlayers > 1) {
+        myprintf("El jugador %d gano el nivel!\n", winningPlayerId);
+    }
+    myprintf("Presione ESPACIO para continuar!\n");
+    myprintf("Presione Q para salir\n");
+    changeFontSize(0);
 
+
+
+    showBackBuffer();
+
+    // Wait for player input to continue
+    int waitingForInput = 1;
+    while (waitingForInput) {
+        if (isPressed(' ')) {
+            if(currentLevel == MAX_LEVELS) {
+                clearScreen();
+                showEndMenu();
+                showBackBuffer();
+                return;
+            }
+            currentLevel++;
+            waitingForInput = 0;
+        } else if (isPressed('q') || isPressed('Q')) {
+            finishPongis();
+            return;
+        }
+    }
+    changeBackgroundColor(GAME_BG_COLOR);
+}
+
+void showEndMenu(){
+    // Clear the screen with the menu background color
+    setDrawBuffer(BACK_BUFFER);
+    changeBackgroundColor(MENU_BG_COLOR);
+    
+    changeFontSize(4);
+    putsColored("Gracias por jugar Pongis Golf!\n", 0xFFD700);
+    changeFontSize(2);
+    putsColored("Presione ESPACIO para volver al nivel 1\n", MENU_TEXT_COLOR);
+    putsColored("Presione Q para salir\n", MENU_TEXT_COLOR);
+    changeFontSize(0);
+    showBackBuffer();
+
+    // Wait for player to press 'Q' to exit
+    
+    
+    finishPongis();
+
+    // Wait for restart or quit
+            int waitingForInput = 1;
+            while (waitingForInput) {
+                if (isPressed(' ')) {
+                    currentLevel = 1; // Restart from level 1
+                    waitingForInput = 0;
+                } else if (isPressed('q') || isPressed('Q')) {
+                    finishPongis();
+                    return;
+                }
+            }
+}
 
 
 
@@ -433,46 +475,13 @@ int checkAllGoals() {
     return 0; // No goal scored
 }
 
-void printWinner(int winningPlayerId) {
-    myprintf("LEVEL %d COMPLETE!\n", currentLevel);
-    if (numPlayers == 1) {
-        myprintf("Well done! Ball in hole!\n");
-    } else {
-        myprintf("Player %d WINS with ball in hole!\n", winningPlayerId);
-    }
-}
-
 void pongisInit(){
     setDrawBuffer(BACK_BUFFER);
     showGolfMenu();
-    // Main game loop - continues until user quits
-    while (1) {
-        // Set up the current level before starting the frame loop
-        levelComplete = 0; // Reset level completion flag
+    while (currentLevel <= MAX_LEVELS) {
+        levelComplete = 0;
         
-        // Load the appropriate level using function pointer array
-        if (currentLevel >= 1 && currentLevel <= MAX_LEVELS) {
-            myprintf("Starting Level %d...\n", currentLevel);
-            levelSetters[currentLevel](); // Call the level setter function
-        } else {
-            // Game completed after 3 levels
-            myprintf("Congratulations! You completed all %d levels!\n", MAX_LEVELS);
-            myprintf("Game completed! Press Q to quit or SPACE to restart from Level 1...\n");
-            
-            // Wait for restart or quit
-            int waitingForInput = 1;
-            while (waitingForInput) {
-                if (isPressed(' ')) {
-                    currentLevel = 1; // Restart from level 1
-                    waitingForInput = 0;
-                } else if (isPressed('q') || isPressed('Q')) {
-                    finishPongis();
-                    myprintf("Thanks for playing Pongis Golf!\n");
-                    return;
-                }
-            }
-            continue; // Skip the game loop and restart
-        }
+        levelSetters[currentLevel]();
 
         int winningPlayerId = 0;
         // Frame loop - continues until level is complete
@@ -513,22 +522,8 @@ void pongisInit(){
         
         // Level completed - wait for user input to continue or quit
         clearScreen();
-        printWinner(winningPlayerId);
-        myprintf("Press SPACE to continue to next level or Q to quit...\n");
+        showLevelCompleteMenu(winningPlayerId);
         showBackBuffer();
-        
-        // Wait for player input to continue
-        int waitingForInput = 1;
-        while (waitingForInput) {
-            if (isPressed(' ')) {
-                currentLevel++;
-                waitingForInput = 0; // Exit waiting loop to start next level
-            } else if (isPressed('q') || isPressed('Q')) {
-                finishPongis();
-                myprintf("Exiting pongis...\n");
-                return;
-            }
-        }
     }
 }
 
@@ -559,5 +554,6 @@ void drawEntities() {
 void finishPongis() {
     setDrawBuffer(FRONT_BUFFER);
     changeBackgroundColor(0x000000);  // Black background
+    changeFontSize(0);
     clearScreen();
 }

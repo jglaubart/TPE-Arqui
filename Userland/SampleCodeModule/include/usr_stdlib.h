@@ -33,7 +33,6 @@ int32_t signed_str_to_num(uint64_t *it, uint64_t buff_length, char *buff);
 
 uint8_t readChar(char *cp);
 char getChar();
-uint64_t readLine(char *buf, uint64_t size);
 int changeFontSize(unsigned int newSize);
 
 
@@ -50,10 +49,12 @@ void setDrawBuffer(int buffer);
 void showBackBuffer();
 void changeBackgroundColor(uint32_t color);
 void clearScreen();
+uint64_t moveCursor(uint64_t x, uint64_t y);
 
 double normalize_angle(double x);
 double sin_taylor(double x);
 double cos_taylor(double x);
 double my_fabs(double x);
 double my_sqrt(double x);
+
 #endif

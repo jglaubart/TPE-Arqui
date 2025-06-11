@@ -175,10 +175,10 @@ void resetCursor_y(){
 
 uint64_t moveCursor(uint64_t x, uint64_t y){
     if(!isValidX(x) || !isValidY(y))
-        return 0;
+        return 1;
     cursorPos.x = x;
     cursorPos.y = y;
-    return 1;
+    return 0;
 }
 
 unsigned int isValidX(uint64_t x){
@@ -257,7 +257,12 @@ uint64_t changeFontSize(uint64_t new_font_size){
 	if(desc->height * new_font_size > VBE_mode_info->height - 2 * Y_MARGIN || desc->width * new_font_size > VBE_mode_info->width - 2 * X_MARGIN){
 		return 0;
 	}
-	font_size = new_font_size;
+    if(new_font_size == 0){
+        new_font_size = default_font_size;
+    }
+	else {
+        font_size = new_font_size;
+    }
 	return 1;
 }
 

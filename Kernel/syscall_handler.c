@@ -10,7 +10,7 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
     uint64_t result;
     switch(rax){
         case(SYS_WRITE_ID):
-            result = sys_write(rdi,(const char *) rsi, rdx);
+            result = sys_write(rdi,(const char *) rsi, rdx, (uint32_t) r10);
             break;
         case(SYS_READ_ID):
             result = sys_read(rdi, (char *) rsi, rdx);
@@ -58,6 +58,9 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
         case(SYS_CHANGE_BG_COLOR_ID):
             result = sys_change_bg_color((uint32_t)rdi);
             break;
+        case(SYS_MOVE_CURSOR_ID):
+            result = sys_move_cursor(rdi, rsi);
+            break;
         default:
             result = -1;
             break;
@@ -65,11 +68,10 @@ uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx,
     return result;
 }
 
-uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count){
-    uint32_t default_color = 0xFFFFFF;
+uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count, uint32_t color){
     char *default_font = "VGA8x16";
 
-    return putNString(buf, default_color, default_font);
+    return putNString(buf, color, default_font);
 }
 
 uint64_t sys_read(uint64_t fd, char *buf, uint64_t count){
@@ -160,4 +162,8 @@ uint64_t sys_set_draw_buffer(int buffer) {
 uint64_t sys_change_bg_color(uint32_t color){
     changeBackgroundColor(color);
     return 0;
+}
+
+uint64_t sys_move_cursor(uint64_t x, uint64_t y){
+    return moveCursor(x, y);
 }

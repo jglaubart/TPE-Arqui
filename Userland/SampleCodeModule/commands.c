@@ -10,7 +10,8 @@ void showCommands(){
 	puts("\ninforeg            Imprime los valores de los registros (CTRL es necesario previamente)");
 	puts("\ntime               Imprime la hora del sistema en pantalla");
 	puts("\ninvopcode          Prueba la excepcion de codigo de operacion invalido");
-	puts("\nzerodiv            Prueba de excepcion de division por cero\n");
+	puts("\nzerodiv            Prueba de excepcion de division por cero");
+	puts("\nchangeFontSize     Cambiar tamano de letra. Recibe como argumento un unsigned int");
 }
 
 void helpCommand(){
@@ -33,4 +34,9 @@ void zeroDivisionCommand(){
 }
 void invalidOpCodeCommand(){
 	InvalidOpCodeTest();
+}
+void changeFontSizeCommand(){
+	
+
+	changeFontSize(size);
 }

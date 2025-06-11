@@ -10,11 +10,16 @@ static uint64_t fdprintfargs(FileDescriptor fd, const char *fmt, va_list args);
 
 uint64_t puts(const char *string) {
     uint64_t count = strlen(string);
-    return sys_call(SYS_WRITE_ID, STDOUT, string, count, 0);
+    return sys_call(SYS_WRITE_ID, STDOUT, string, count, 0xFFFFFF);
+}
+
+uint64_t putsColored(const char * string, uint32_t color){
+    uint64_t count = strlen(string);
+    return sys_call(SYS_WRITE_ID, STDOUT, string, count, color);
 }
 
 uint64_t putChar(const char c){
-    return sys_call(SYS_WRITE_ID, STDOUT, &c, 1, 0);
+    return sys_call(SYS_WRITE_ID, STDOUT, &c, 1, 0xFFFFFF);
 }
 
 
@@ -148,7 +153,7 @@ static uint64_t fdprintfargs(FileDescriptor fd, const char *fmt, va_list args)
         }
     }
     buffer[j++] = 0;
-    return sys_call(SYS_WRITE_ID, fd, buffer, 1, 0);
+    return sys_call(SYS_WRITE_ID, fd, buffer, 1, 0xFFFFFF);
 }
 
 uint64_t fdprintf(FileDescriptor fd, const char *fmt, ...)
@@ -258,34 +263,6 @@ char getChar(){
     uint64_t len;
     while((len = readChar(&c)) < 1);
     return c;
-}
-
-uint64_t readLine(char *buf, uint64_t size){
-    uint64_t i = 0;
-    char c;
-    while((c = getChar()) != '\n'){
-        if(i < size){
-            buf[i] = c;
-        }
-        if(c == '\b' && i > 0){
-            i += putChar(c);
-            if(i < size){
-                buf[i] = '\0';
-            }
-        }else{
-            i += putChar(c);
-        }
-    }
-    putChar('\n');
-    uint64_t ans;
-    if(i < size){
-        buf[i] = '\0';
-        ans = i;
-    }else{
-        buf[size - 1] = '\0';
-        ans = size;
-    }
-    return ans;
 }
 
 void beep(uint64_t freq, uint64_t ticks){
@@ -521,4 +498,8 @@ double my_sqrt(double x) {
     }
 
     return next;
+}
+
+uint64_t moveCursor(uint64_t x, uint64_t y) {
+    return sys_call(SYS_MOVE_CURSOR_ID, x, y, 0, 0);
 }

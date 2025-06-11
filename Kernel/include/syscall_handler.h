@@ -25,13 +25,14 @@ enum{
     SYS_IS_PRESSED_ID = 16,
     SYS_SHOW_BACK_BUFFER_ID = 17,
     SYS_SET_DRAW_BUFFER_ID = 18,
-    SYS_CHANGE_BG_COLOR_ID = 19
+    SYS_CHANGE_BG_COLOR_ID = 19,
+    SYS_MOVE_CURSOR_ID = 20
 };
 
 
 uint64_t syscall_handler(uint64_t rax, uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t r9);
 
-uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count);
+uint64_t sys_write(uint64_t fd, const char *buf, uint64_t count, uint32_t color);
 uint64_t sys_read(uint64_t fd, char *buf, uint64_t count);
 uint64_t sys_clear();
 uint64_t sys_get_regs();
@@ -48,4 +49,5 @@ uint64_t sys_show_back_buffer();
 uint64_t sys_set_draw_buffer(int buffer);
 uint64_t sys_change_bg_color(uint32_t color);
 void printRegisters(uint64_t *regs); 
+uint64_t sys_move_cursor(uint64_t x, uint64_t y);
 #endif
