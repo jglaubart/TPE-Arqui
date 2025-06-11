@@ -64,6 +64,7 @@
     "videodriver.h": "c",
     "stdint.h": "c",
     "sounddriver.h": "c",
-    "rtc_time.h": "c"
+    "rtc_time.h": "c",
+    "compare": "c"
   }
 }

@@ -11,7 +11,7 @@ void showCommands(){
 	puts("\ntime               Imprime la hora del sistema en pantalla");
 	puts("\ninvopcode          Prueba la excepcion de codigo de operacion invalido");
 	puts("\nzerodiv            Prueba de excepcion de division por cero");
-	puts("\nchangeFontSize     Cambiar tamano de letra. Recibe como argumento un unsigned int");
+	puts("\nchangeFontSize     Cambiar tamano de letra. Recibe como argumento un unsigned int\n");
 }
 
 void helpCommand(){
@@ -36,7 +36,8 @@ void invalidOpCodeCommand(){
 	InvalidOpCodeTest();
 }
 void changeFontSizeCommand(){
-	
-
+	puts("Enter new font size: ");
+	int size;
+	scanf("%d", &size);
 	changeFontSize(size);
 }

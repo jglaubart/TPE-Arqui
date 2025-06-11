@@ -254,12 +254,12 @@ void scrollUp() {
 }
 
 uint64_t changeFontSize(uint64_t new_font_size){
-	if(desc->height * new_font_size > VBE_mode_info->height - 2 * Y_MARGIN || desc->width * new_font_size > VBE_mode_info->width - 2 * X_MARGIN){
-		return 0;
-	}
     if(new_font_size == 0){
         new_font_size = default_font_size;
     }
+	if(desc->height * new_font_size > VBE_mode_info->height - 2 * Y_MARGIN || desc->width * new_font_size > VBE_mode_info->width - 2 * X_MARGIN){
+		return 0;
+	}
 	else {
         font_size = new_font_size;
     }

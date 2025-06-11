@@ -33,6 +33,8 @@ int32_t signed_str_to_num(uint64_t *it, uint64_t buff_length, char *buff);
 
 uint8_t readChar(char *cp);
 char getChar();
+uint64_t readLine(char buff[], uint64_t count);
+uint64_t scanf(const char *fmt, ...);
 int changeFontSize(unsigned int newSize);
 
 

@@ -67,4 +67,5 @@ uint64_t getScreenHeight();
 int edgeIntersectsScanline(const Point *p0, const Point *p1, uint64_t scanY, int64_t *outX);
 void drawCircle(const Point corners[2], uint32_t color);
 void drawRectangle(const Point corners[4], uint32_t color);
+uint64_t changeFontSize(uint64_t newSize);
 #endif

@@ -265,6 +265,109 @@ char getChar(){
     return c;
 }
 
+uint64_t readLine(char buff[], uint64_t count)
+{
+    uint64_t i = 0;
+    uint8_t c;
+    while ((c = getChar()) != '\n')
+    {
+        if (i < count)
+        {
+            buff[i] = c;
+        }
+        if (c == '\b')
+        {
+            if (i > 0)
+            {
+                i += putChar(c);
+                if (i < count)
+                    buff[i] = 0;
+            }
+        }
+        else
+        {
+            i += putChar(c);
+        }
+    }
+    putChar('\n');
+    uint64_t toRet;
+    if (i < count)
+    {
+        buff[i] = 0;
+        toRet = i;
+    }
+    else
+    {
+        buff[count] = 0;
+        toRet = count;
+    }
+    return i;
+}
+
+uint64_t scanf(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+
+    char buffer[MAX_CHARS + 1] = {0};
+    char auxBuffer[100] = {0};
+    uint64_t i, j, count_read;
+    uint8_t *char_dir;
+    int32_t *int_dir;
+
+    uint64_t buffSize = 0;
+
+    for (i = 0, j = 0, count_read = 0; fmt[i] != 0;)
+    {
+        if (j == buffSize)
+        {
+            buffSize = readLine(buffer, MAX_CHARS);
+            j = 0;
+        }
+        if (buffer[j] == ' ')
+        {
+            j++;
+        }
+        else
+        {
+            if (fmt[i + 1] != 0 && fmt[i] == '%')
+            {
+                switch (fmt[i + 1])
+                {
+                case 's':;
+                    char_dir = va_arg(args, char *);
+                    while (j < buffSize && buffer[j] != ' ' && buffer[j] != '\t')
+                        *char_dir++ = buffer[j++];
+                    *char_dir = 0;
+                    i++;
+                    count_read++;
+                    break;
+                case 'd':;
+                    int_dir = va_arg(args, int32_t *);
+                    *int_dir = signed_str_to_num(&j, buffSize, buffer);
+                    i++;
+                    count_read++;
+                    break;
+                case 'u':;
+                    int_dir = va_arg(args, uint32_t *);
+                    *int_dir = unsigned_str_to_num(&j, buffSize, buffer);
+                    i++;
+                    count_read++;
+                    break;
+                case 'c':;
+                    char_dir = va_arg(args, char *);
+                    *char_dir = buffer[j++];
+                    count_read++;
+                    i++;
+                    break;    
+                }
+            }
+            i++;
+        }
+    }
+    return count_read;
+}
+
 void beep(uint64_t freq, uint64_t ticks){
     sys_call(SYS_BEEP_ID, freq, ticks, 0, 0);
 }

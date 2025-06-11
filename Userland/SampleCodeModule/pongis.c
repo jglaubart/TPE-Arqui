@@ -69,8 +69,7 @@ void showGolfMenu() {
             break;
         }
         if (isPressed('q') || isPressed('Q')) {
-            finishPongis();
-            myprintf("Saliendo de Pongis Golf...\n");
+            currentLevel = MAX_LEVELS+1;
             return;
         }
     }
@@ -109,7 +108,7 @@ void showLevelCompleteMenu(int winningPlayerId) {
             currentLevel++;
             waitingForInput = 0;
         } else if (isPressed('q') || isPressed('Q')) {
-            finishPongis();
+            currentLevel = MAX_LEVELS+1;
             return;
         }
     }
@@ -129,11 +128,6 @@ void showEndMenu(){
     changeFontSize(0);
     showBackBuffer();
 
-    // Wait for player to press 'Q' to exit
-    
-    
-    finishPongis();
-
     // Wait for restart or quit
             int waitingForInput = 1;
             while (waitingForInput) {
@@ -141,7 +135,7 @@ void showEndMenu(){
                     currentLevel = 1; // Restart from level 1
                     waitingForInput = 0;
                 } else if (isPressed('q') || isPressed('Q')) {
-                    finishPongis();
+                    currentLevel = MAX_LEVELS+1;
                     return;
                 }
             }
@@ -477,6 +471,7 @@ int checkAllGoals() {
 
 void pongisInit(){
     setDrawBuffer(BACK_BUFFER);
+    currentLevel = 1;
     showGolfMenu();
     while (currentLevel <= MAX_LEVELS) {
         levelComplete = 0;
@@ -525,6 +520,9 @@ void pongisInit(){
         showLevelCompleteMenu(winningPlayerId);
         showBackBuffer();
     }
+
+    finishPongis();
+    return;
 }
 
 void checkCollisions() {
@@ -554,6 +552,5 @@ void drawEntities() {
 void finishPongis() {
     setDrawBuffer(FRONT_BUFFER);
     changeBackgroundColor(0x000000);  // Black background
-    changeFontSize(0);
     clearScreen();
 }
