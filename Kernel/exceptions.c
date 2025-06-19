@@ -14,8 +14,8 @@ static void convertToHex(uint64_t number, char buffer[16]);
 
 void printRegisters(uint64_t *regs) {
     const char *registerTitles[REGISTERS] = {
-        "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP",
-        "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15",
+        "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP",
+        "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15", "RSP",
         "RIP", "RFLAGS"
     };
 
@@ -34,7 +34,11 @@ void printRegisters(uint64_t *regs) {
         if (i % 4 == 3)
             newline();
         else
-            putString(" || ", 0xFFFFFF); 
+            putString(" || ", 0xFFFFFF);
+
+        for(int j = 2; j < REGISTERS; j++){
+            buffer[j] = 0; // Reset buffer for next use
+        }
     }
     newline(0x000000);
 }

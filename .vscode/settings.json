@@ -55,16 +55,5 @@
   "C_Cpp_Runner.useLeakSanitizer": false,
   "C_Cpp_Runner.showCompilationTime": false,
   "C_Cpp_Runner.useLinkTimeOptimization": false,
-  "C_Cpp_Runner.msvcSecureNoWarnings": false,
-  "files.associations": {
-    "syscalls.h": "c",
-    "syscall_handler.h": "c",
-    "exceptions.h": "c",
-    "lib.h": "c",
-    "videodriver.h": "c",
-    "stdint.h": "c",
-    "sounddriver.h": "c",
-    "rtc_time.h": "c",
-    "compare": "c"
-  }
+  "C_Cpp_Runner.msvcSecureNoWarnings": false
 }

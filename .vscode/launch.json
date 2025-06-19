@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/eugemigliaro/Documents/facultad/segundo/ArquitecturaDeComputadoras/tp5/Kernel",
-      "program": "/home/eugemigliaro/Documents/facultad/segundo/ArquitecturaDeComputadoras/tp5/Kernel/build/Debug/outDebug",
+      "cwd": "/home/eugemigliaro/Documents/facultad/segundo/ArquitecturaDeComputadoras/TPE_Arqui/Userland/SampleCodeModule",
+      "program": "/home/eugemigliaro/Documents/facultad/segundo/ArquitecturaDeComputadoras/TPE_Arqui/Userland/SampleCodeModule/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
