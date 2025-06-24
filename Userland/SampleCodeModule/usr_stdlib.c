@@ -279,7 +279,8 @@ uint64_t readLine(char buff[], uint64_t count)
         {
             if (i > 0)
             {
-                i += putChar(c);
+                putChar(c);
+                i--;
                 if (i < count)
                     buff[i] = 0;
             }
