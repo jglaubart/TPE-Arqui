@@ -2,7 +2,9 @@
 #include <commands.h>
 #include <usr_stdlib.h>
 #include "pongis.h"
-// IMPLEMENTAION DE LOS COMANDOS
+
+static void clearKeyboardBuffer();
+
 void showCommands(){
 	puts("\n Comandos disponibles:");
 	puts("\nclear              Resetea la shell a su estado original");
@@ -25,6 +27,7 @@ void clearCommand(){
 }
 void golfCommand(){
 	pongisInit();
+	clearKeyboardBuffer();
 }
 void infoRegCommand(){
 	getRegisters();
@@ -40,4 +43,8 @@ void changeFontSizeCommand(){
 	int size;
 	scanf("%d", &size);
 	changeFontSize(size);
+}
+
+void clearKeyboardBuffer(){
+	while(getChar() != '\n');
 }
