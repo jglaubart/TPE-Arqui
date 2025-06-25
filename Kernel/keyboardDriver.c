@@ -159,7 +159,7 @@ static const char ps2_make_keymap[PS2_KEYMAP_SIZE][3] = {
 };
 
 
-static uint8_t key_states[HID_KEYMAP_SIZE] = {0};
+static uint8_t key_states[256] = {0};
 static char buffer[BUFFER_SIZE] = {0};
 static int currentKey = 0;
 static int nextToRead = 0;
@@ -171,6 +171,7 @@ void writeInBuffer(){
     unsigned int scanCode = getKeyPressed();
     uint8_t pressed = !(scanCode & 0x80);
     uint8_t makeCode = scanCode & 0x7F;
+
     switch(makeCode){
         case PS2_LSHIFT_MAKE:
         case PS2_RSHIFT_MAKE:
@@ -197,9 +198,7 @@ void writeInBuffer(){
 
     if(isMappedChar(makeCode, index)){
         char c = ps2_make_keymap[makeCode][index];
-        if(c != 0){
-            key_states[(unsigned char) c] = pressed;
-        }
+        key_states[(unsigned char) c] = pressed;
         if(pressed){
             if(isAlpha(c)){
                 if(capsLock){
@@ -239,5 +238,8 @@ uint8_t isAlpha(char c){
 }
 
 uint8_t isCharPressed(char c) {
-    return key_states[(unsigned char)c];
+    if(c < 0 || c >= 256){
+        return 0;
+    }
+    return key_states[(unsigned char) c];
 }

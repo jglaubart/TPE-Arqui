@@ -20,27 +20,29 @@ void printRegisters(uint64_t *regs) {
     };
 
     // Buffer para convertir a hexadecimal
-    char buffer[19];
-        buffer[0] = '0';
-        buffer[1] = 'x';
-        buffer[18] = '\0';
+    char buffer[17];
+    buffer[16] = '\0';
 
-	// Imprimo los registros
-	for (int i = 0; i < 18; i++) {
-        putString(registerTitles[i], 0xFFFFFF); //
-        putString(" - ", 0xFFFFFF); 
-        convertToHex(regs[i], buffer + 2);
-        putString(buffer, 0xFFFFFF);
-        if (i % 4 == 3)
-            newline();
-        else
-            putString(" || ", 0xFFFFFF);
-
-        for(int j = 2; j < REGISTERS; j++){
-            buffer[j] = 0; // Reset buffer for next use
+    // Imprimo los registros
+    for (int i = 0; i < 18; i++) {
+        putString(registerTitles[i], 0xFFFFFF);
+        putString(": 0x", 0xFFFFFF);
+        
+        // Convert to hex without leading zeros
+        if (regs[i] == 0) {
+            putString("0", 0xFFFFFF);
+        } else {
+            convertToHex(regs[i], buffer);
+            // Find first non-zero character
+            int start = 0;
+            while (start < 16 && buffer[start] == '0') {
+                start++;
+            }
+            putString(buffer + start, 0xFFFFFF);
         }
+        
+        putString("\n", 0xFFFFFF);
     }
-    newline(0x000000);
 }
 void exceptionDispatcher(int exception, const uint64_t regs[17]) {
 	if (exception == ZERO_EXCEPTION_ID){

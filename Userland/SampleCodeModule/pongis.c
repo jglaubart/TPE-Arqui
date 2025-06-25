@@ -508,7 +508,6 @@ void pongisInit(){
             // Check for quit input
             if (isPressed('q') || isPressed('Q')) {
                 finishPongis();
-                myprintf("Exiting pongis...\n");
                 return;   
             }
             
@@ -553,4 +552,6 @@ void finishPongis() {
     setDrawBuffer(FRONT_BUFFER);
     changeBackgroundColor(0x000000);  // Black background
     clearScreen();
+    myprintf("Gracias por jugar Pongis Golf!\n");
+    myprintf("Presione ENTER para regresar a la consola.\n");
 }

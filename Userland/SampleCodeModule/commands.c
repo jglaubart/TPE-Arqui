@@ -3,7 +3,7 @@
 #include <usr_stdlib.h>
 #include "pongis.h"
 
-static void clearKeyboardBuffer();
+static void clearBuffer();
 
 void showCommands(){
 	puts("\n Comandos disponibles:");
@@ -27,7 +27,7 @@ void clearCommand(){
 }
 void golfCommand(){
 	pongisInit();
-	clearKeyboardBuffer();
+	clearBuffer();
 }
 void infoRegCommand(){
 	getRegisters();
@@ -39,12 +39,12 @@ void invalidOpCodeCommand(){
 	InvalidOpCodeTest();
 }
 void changeFontSizeCommand(){
-	puts("Enter new font size: ");
+	puts("Ingrese el nuevo tamano de fuente: ");
 	int size;
 	scanf("%d", &size);
 	changeFontSize(size);
 }
 
-void clearKeyboardBuffer(){
+static void clearBuffer(){
 	while(getChar() != '\n');
 }

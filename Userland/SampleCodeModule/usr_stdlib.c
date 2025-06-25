@@ -408,55 +408,24 @@ void getRegisters() {
     uint64_t regs[REGISTERS];
     uint64_t retValue = sys_call(SYS_GET_REGS_ID, regs, 0, 0, 0);
     if(retValue == 0) {
-        myprintf("Must press CTRL to backup registers.");
+        myprintf("Debe presionar CTRL para capturar los registros.\n");
     }
     else{
-        uint64_t reg;
-         // Buffer para convertir a hexadecimal
         char buffer[19];
-            buffer[0] = '0';
-            buffer[1] = 'x';
-            buffer[18] = '\0';
+        buffer[0] = '0';
+        buffer[1] = 'x';
+        buffer[18] = '\0';
 
-        // Imprimo los registros
         for (int i = 0; i < REGISTERS; i++) {
-            myprintf("%s - ",registerTitles[i]);
             unsigned_num_to_hex_str(regs[i], buffer + 2);
-            myprintf(buffer);
-            if (i % 4 == 3)
-                puts("\n");
-            else
-                myprintf(" || ");
-
-            for(int j = 2; j < REGISTERS; j++){
+            myprintf("%s: 0x%s\n", registerTitles[i], buffer + 2);
+            
+            for(int j = 2; j < 18; j++){
                 buffer[j] = 0; // Reset buffer for next use
             }
         }
     }
-    puts("\n");
 }
-
-/* void getRegisters()
-{
-    char *regName[] = {
-        "RAX: ", "RBX: ", "RCX: ", "RDX: ", "RSI: ", "RDI: ",
-        "RBP: ", "R8: ", "R9: ", "R10: ", "R11: ", "R12: ",
-        "R13: ", "R14: ", "R15: ", "RSP: ", "RIP: ", "RFLAGS: "};
-    myprintf("Register Status: ");
-    uint64_t regsStatus[REGISTERS];
-    uint64_t call = sys_call(SYS_GET_REGS_ID, regsStatus, 0, 0, 0);
-    if (call == 0)
-        myprintf("Register backup not done. Press ESC to save register status.");
-    else
-    {
-        uint64_t reg;
-        for (int i = 0; i < REGISTERS; i++)
-        {
-            reg = regsStatus[i];
-            myprintf("\n%s %x", regName[i], reg);
-        }
-    }
-} */
 
 void clearScreen() {
     sys_call(SYS_CLEAR_ID, 0, 0, 0, 0);
